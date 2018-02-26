@@ -1,0 +1,1831 @@
+Howto transfer mailclient mails from one to another
+
+atrsoftgmbh 2018
+Part of the MailTransfer script system
+
+This contains small chepters with these headings
+
+- For the impatient
+- Names and concepts
+- A mail is ...
+- Scanning, generation and execution
+- Doing it for claws-mail
+- Doing it for evolution
+- Doing it for kmail
+- Doing it for mutt
+- Doing it for sylpheed
+- Doing it for seamonkey
+- Doing it for thunderbird
+- What is that vanilla thing ?
+- Restrictions
+- How to adjust things
+- How to handle errrrrrroorrrs  - ups ...
+- What to do if your disk space is not enough for old and new ?
+- History
+- Contact
+
+-------------------------------------------------------------------------------
+
+For the impatient
+
+You have not much time, so open a shell window or log in - details later...
+
+Then create a working directory, for this we use a t here.
+you will rough need for 5000 mails an megabyte log space here - no more..
+
+ > mkdir t
+ > cd t
+
+Copy all scripts to the t directory.
+
+> ls
+  -rw-rw-r--.  1 ar ar 29418 24. Feb 01:39 MailTransferDirData.pm
+  -rw-rw-r--.  1 ar ar  2425 24. Feb 01:39 MailTransferDirListClaws.pm
+  -rw-rw-r--.  1 ar ar  3368 24. Feb 01:39 MailTransferDirListEvolution.pm
+  -rw-rw-r--.  1 ar ar  2968 24. Feb 01:39 MailTransferDirListKmail.pm
+  -rw-rw-r--.  1 ar ar  2565 24. Feb 01:39 MailTransferDirListMutt.pm
+  -rw-rw-r--.  1 ar ar 23374 24. Feb 01:39 MailTransferDirList.pm
+  -rw-rw-r--.  1 ar ar  5064 24. Feb 01:39 MailTransferDirListSeamonkey.pm
+  -rw-rw-r--.  1 ar ar  2355 24. Feb 01:39 MailTransferDirListSylpheed.pm
+  -rw-rw-r--.  1 ar ar  5080 24. Feb 01:39 MailTransferDirListThunderbird.pm
+  -rw-rw-r--.  1 ar ar  2458 24. Feb 01:39 MailTransferDirListVanilla.pm
+  -rw-rw-r--.  1 ar ar  3936 24. Feb 01:39 MailTransferExec.pl
+  -rw-rw-r--.  1 ar ar  3990 24. Feb 01:39 MailTransferGen.pl
+  -rw-rw-r--.  1 ar ar  8839 24. Feb 01:39 MailTransferScan.pl
+
+Should look like this.
+
+Scan your mail clients directory like this
+
+> perl MailTransferScan.pl vanilla $HOME/vhome/mails vscan1.txt
+
+
+See for the amount of mails you have in - its in K, meaning you need that
+many K of disk space later on two times - one for the original and one for
+the target. If you are nor thaving that see below in the What if ... thing..
+
+Then generate a plan from the scan.
+
+> perl MailTransferGen.pl vanilla vscan1.txt $HOME/vhome/newmails vplan1.txt 
+
+Now execute the plan.
+
+> perl MailTransferExec.pl vanilla vplan1.txt vlog1.txt
+
+After this you find all mails in the new tree, so its done.
+
+Notes:
+
+You have to replace in the scan the mailsystem with your source system.
+
+You need for your source system the storage start directory.
+
+You need for the gen and exec the target system.
+
+You need for the target system the storage directory.
+
+Now for the ones that have time to ask what and how - the rest....
+
+-------------------------------------------------------------------------------
+
+Names and concepts
+
+This should help you to get in.
+
+First the names.
+
+- mail
+A so called file that is transferred from one computer to another and
+has a format that fullfilles the so called rfc definitions for a
+smtp transfer agent (sendmail, qmail, ...) mail format.
+ 
+- mailserver
+A system that holds mails in, sent them if needed to others via
+some kind of communication network stuff
+
+- mailclient
+A system that makes it possible to read the mails for a user.
+
+- user
+Thats you...
+
+- mailfile
+The file in the filesystem that holds the mail information.
+
+- mailbox
+The thing you have in your mailclient that holds mails - mostly in so
+called folders
+
+- folder
+A collection of mails, not separated any more deeper.
+
+- directory
+A thing in the filesystem of the computer to hold multiple files.
+
+- file
+A thing in the filesystem of the computer to hold data.
+
+- index
+A thing that helps you to find the thing you search. It has
+normally the information about where, what and how big the thing is.
+Sometiems also if you have read it, if you have amade a reply etc etc.
+
+- shell
+A command window or a login window for execution of commands  by using
+the keyboard, so called commandline sometimes
+
+- citate
+A citate starts with a
+### begin
+on its own line and ends with a
+### end
+on its own line. Everything between is the citate text itself...
+
+- storage directory
+The root of all evil - the directory that holds the basic folders
+and sometimes mailfiles. Can be a single thing.
+If your system supports multiple you have to do the transfers
+at best for each separately...
+
+----------------------------------------------------------
+
+Now that we have that, we can start with the concepts.
+
+The mails are located after you sent them or receive them in the
+filesystem of the machine - computer - whatever you call it - with which
+you now try to see them.
+
+You have a program - some call it nowadays app - that you use to see them.
+
+And sometimes to compose new mails and sent them.
+
+That program is a mailclient program.
+
+We use here mailcleints for linux and unix, and we have the mail in files
+that are maintined by the mailclient - not the mailserver.
+
+The transfer works for the mail clients that are today in for linux and
+some other systems.
+
+Here the list that we can use.
+
+claws-mail
+
+Actual version is 3.15.1 
+
+A simple but good looking one, has some additional features. Is a graphical
+user interface - meaning you have things like menus, buttons, and use a
+mouse or trackpad or even a touchscreen to stear it ..
+
+evolution
+
+Actual version is 3.26.5
+
+A more complex program, its part of the gnu desktop programs, and is
+perhaps a full solution for every need ... but also a big one..
+The graphical user interface is in again here...
+
+kmail
+
+Actual version is 5.7.2
+
+Also a more complex program - but this time its another system, the so
+called k desktop environment, that delivers the thing.
+Also a graphical user interface...
+
+mutt
+
+Actual version is 1.9.2
+
+A command line tool, that is popular for the people that use mostly
+the shell and only for small time the GUI of a system.
+It is a part of mostly every unix today and even on windows available.
+
+sylpheed
+
+Actual version is 3.6.0
+
+Seems to me a very simple one of the graphical user interface programs.
+Has focus on mails only...
+
+seamonkey
+
+Actual version is 2.49.1
+
+A big one from the mozilla organisation, is a combination of all the
+things you need in the web today, browser, mail, calendar ...
+Looks like a combination of most isolated programs (firefox, thunderbird)...
+
+thunderbird
+
+Actual version is 52.6.0
+
+A big one from the mozilla organisation, with focus on mails, calendar and
+not so much web here ... of course a graphical one ..
+
+
+-------------------------------------------
+
+Ok. You use one of these. Then you are in.
+
+-------------------------------------------
+
+If you use one of these you are out :
+
+geary - cannot be used wihtout an imap server - which i dont use on my system.
+
+mailspring - did not made it on my box after starting.
+
+mulberry - did not start on my box (perhaps a 2007 x86 is simply outdated)
+
+hiri - works only with a microsoft mail server as far as i can say
+
+zimbra - did not start for my user after installation.
+
+So i dont support systems that cannot run on my box.
+
+End of story.
+--------------------------------------------
+
+The systems i support have all a storage for the mails in the filesystem.
+At least today (2018, febuary ..) i can locate the files in question
+without too much sherlock homes things ... if the boys and girls behind
+the tools change that - i cut the support for them. End of story.
+
+You as an user - with exception of mutt users - have a different sight of
+the things. You know folders - lists - already seen, dropped and so on mails
+from your tool.
+
+For the transfer this is information in the index data of the mail client.
+
+That information is NOT transferred.
+
+So you get the mails from one to another - but thats nearly all.
+
+For the things you call folders - i do my best, and most seem to get the
+folders in again, but some need at least a little adjustment...
+
+So now we know what to expect. We get most of the folders and its mails
+transfered, and not the rest of information. So no info for already
+answered or so ...
+
+Next thing is how its done.
+
+We use here a so called multiple phase transfer.
+
+First phase is to scan the old clients installation from a specific point
+of its storage for the things we call folders and mails ...
+
+This phase is done by the scanner.
+
+Its a script written in the programing language perl - as all parts - and
+is doing the job to create a text file that holds all the information
+the next phase needs.
+
+This file is the so called scanfile.
+
+A scanfile ist a vital thing here, you can see for it with your favorite
+text editor (kate, gedit, vi, emacs, even libreoffice or some of the gui
+will do ... )
+
+The thing holds all info about that what will be transferred.
+
+Details later on.
+
+Next phase is to generate a planfile.
+
+This is the moment when the second system comes in - the targetsystem.
+
+The first is here the sourcesystem.
+
+You can create for every combination of clients a so called planfile.
+
+Mostly you will use this for transfer from one client to another and that
+is all. But if you want you can make multiple plans... no problem.
+
+So it is possible to make plans for all systems - you can do a transfer
+from a kmail to evolution, or claws, or mutt ... its all there.
+
+You can also do a transfer from one to the other with the same kind.
+
+So you need the scanfile and then you create the planfile.
+
+Again the planfile is a text file and you can use your editor to see for it.
+
+Next phase is the execution of the transfer.
+
+This is done with the planfile - and only that - and delivers a lot of files
+that are transfered, directories that are created, and a log file that
+holds a protocol of the things that were done.
+
+Next phase is to make the result into the right spot in your target .
+
+This can be - nothing to do in simplest case - to copy a whole part of
+the target system and integration of the result of the execution phase.
+
+Last phase is to make the things that has been transfered finally visible
+in the target mailclient. This can be - nothing at all to having changing
+a dummy folders location in the thing ....
+
+After this - we are through. You can drop whatever you do not need anymore.
+
+So i repeat it here in short form:
+
+We use a phase transfer model, and its
+- scanning,
+- generation of a plan,
+- execution of the plan,
+- incorporation of the result in the target,
+- making visible the result.
+
+For the first three phases we have scripts in the transfer.
+The last two must be done - if needed - by you, the user.
+
+Important last thing.
+
+In any case you should shut down the mailclients.
+
+Many people seem to think this is not needed - but for the transfer thing
+i made it mandatory.
+
+SHUT DOWN THE MAILCLIENTS.
+
+Important last thing after the last thing.
+Make a backup before you start from the source system after shutdown.
+
+Even a scan can hurt if you have a broken directory tree from a
+hard disk failure ... so dont do anything before you have a valid
+backup (normally a tar or zip is good enough if the client is shut down ...)
+
+If you have any automagic thing else in place - like automatic delivery,
+use of a procmail or so - turn that off...
+
+-------------------------------------------------------------------------------
+
+A mail is ...
+
+For the transfer a part of a file.
+
+The file is located in the filesystem of the computer that you use - not
+a remote server, nor an imap or pop gateway, and not a binary encrypted thing
+like the microsoft way of life ...
+
+The file can hold one mail at least.
+
+For the mail its a bit fuzzy what it is - the rfc definetely says about
+it something - but in the end we have a thing that we can at best describe
+like this.
+
+- its a text file part
+- it has a header and a body part
+- for the header there are no empty lines in
+- for the body the thing contains of "some" text 
+
+Let us see a small one here to unserstand.
+
+### begin
+From root@hydra.alphaset.de  Sun Feb 11 21:19:34 2018
+X-Mozilla-Status: 0009
+X-Mozilla-Status2: 00000000
+Return-Path: <root@hydra.alphaset.de>
+Received: from hydra.alphaset.de (localhost [127.0.0.1])
+	by hydra.alphaset.de (8.15.2/8.15.2) with ESMTP id w1BKJYuf005341
+	for <ar@hydra.alphaset.de>; Sun, 11 Feb 2018 21:19:34 +0100
+Received: (from root@localhost)
+	by hydra.alphaset.de (8.15.2/8.15.2/Submit) id w1BKJYtx005340
+	for ar; Sun, 11 Feb 2018 21:19:34 +0100
+From: root <root@hydra.alphaset.de>
+Message-Id: <201802112019.w1BKJYtx005340@hydra.alphaset.de>
+Date: Sun, 11 Feb 2018 21:19:34 +0100
+To: ar@hydra.alphaset.de
+Subject: hugo2
+User-Agent: Heirloom mailx 12.5 7/5/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+So 11. Feb 21:19:34 CET 2018
+
+### end
+
+Ok, thats not so much here ..
+
+We have a header. Its from line 
+From root@hydra.alphaset.de  Sun Feb 11 21:19:34 2018
+to line
+Content-Transfer-Encoding: 7bit
+
+You see there is no empty line in - no line with no text at all ...
+
+Then we have an empty line. Its the separation of header and body.
+
+Every mail has this separation - and i count on that in the split thing ..
+Later more about this ...
+
+The body then contains only one line - its 
+So 11. Feb 21:19:34 CET 2018
+
+Again there is an empty line after this - its technically not needed, but
+its normally always in.
+
+This is one mail - you have a lot of technical stuff in.
+
+Your mails are always holding text - its visible with a text editor.
+
+If someone uses not text - well, thats possible, but for the header i think
+at least bad taste...
+
+OK.
+
+We have now two ways a system can store mails.
+
+One is to use one file per mail.
+
+The other is  - use one file for many mails.
+
+The first one is technically better - i like to have things that are ONE
+in ONE physical entity.
+
+So i like it.
+
+If you have multiple mails in one file - you get trouble.
+
+First of all: Changing a file is a read - manipulate - write thing.
+
+This takes time. So we need something to synchronise with others in case
+we have to do jobs with one file only for multiple mails.
+
+Take a look at the unix mailbox in the traditional system.
+
+Its a file in /var/mail or /var/spool/mail.
+
+Name is the name of the user.
+
+You can ls the directory and see for yourself.
+
+If the mailsystem on the computer has to deliver a mail - you are in
+trouble if your mail reader program use the file too.
+
+If you want to add a new mail, and have also delete another by the reader,
+well, thats now a BAD situation ...
+
+So the boys and girls who made the system made several things to solve it.
+
+But in the end ... its still not solved.
+
+One group of developers decided to make a new approach.
+
+They create a directory - some call it a folder - and in there three
+subdirectories.
+
+They are new, tmp and cur.
+
+The subdirectories hold mails in a one mail per file way.
+
+In theory the new mails then go in into the new directory, the
+things are then when they are complete shifted to cur, and the reader then
+makes only access to the cur directory... tmp is used for internal use.
+
+So far the theory.
+
+This is called a maildir storage in the rfc, and so i will call it also a
+
+maildir
+
+here.
+
+The one file only thing is a so called berkley mailbox file - short a
+
+mbox file
+
+here.
+
+Ok. Now we have these two and sometimes a variation of the directory.
+
+For example the sylpheed and claws-mail use a kind of maildir - but dont
+have the new, cur and tmp in.
+
+The thunderbird and seamonkey use the mbox file, also the mutt...
+
+But at last for kmail its a mix on my box - old kmail used mbox,
+new uses maildir ..
+
+We dont talk about the things every mailclient has in here.
+
+The index data.
+
+If you use the tool - it creates the index data to know if you have read
+a mail, if you have made a reply, a copy and so on...
+
+This is done by every tool in a different way. There is no rfc to make this
+interoperable.
+
+So - accept it. This is done from the boys and girls that
+make the tool - not from the gods of mail.
+
+I will not check for the so called developer information of the systems.
+So i will ony use that index data if i can READ it with a text editor.
+And then only if i MUST have it (see seamonkey and tunderbirds msf thing).
+
+This is all NOT part of the mails after all.
+
+If you see for the mails - you find that something familiar is in here.
+
+Its the structure of what we call the folders in the tool - at least for
+the graphical fraction here.
+
+This structure is somehow also in for the directories that hold the files.
+
+In case of the systems that have maildir its a bit different.
+
+For today kmail its a subdirectory correspond to folder thing.
+
+For evolution its a one director with a naming convention holds the
+path for the folder thing.
+
+For claws-mail and sylpheed its a subdirectory thing - and its a very direct
+one.
+
+For thunderbird and evolution we have a subdirectory concept - but the mails
+are in mbox files.
+
+So much for the storage of mails here. To see it for yourself, use the
+file system browser of your choice (dolphin, emacs dir mode, mc, .. ls -lR ??)
+and feel free to make some experiments for yourself..
+
+For the now most important question - where start that directories - see
+the sections below for the systems itsself.
+
+-------------------------------------------------------------------------------
+
+Scanning, generation and execution
+
+The transfer now uses a bunch of scripts that are holding perl code.
+
+The things are used from three major scripts. The scanner, the generator and
+the executor.
+
+The scanner is used to make a list of all mails and folders you have in a
+mailclient storage.
+
+It uses a starting point for that. If you only want to transfer a part
+of your mails - you simply choose only the proper point in the filesystem.
+
+Well, if the system supports that - if not .. you need to transfer everything.
+
+The scanner has build in some simple rules to ignore things.
+
+I dont want to transfer things that can be in movement, so i dont
+transfer any inbox / outbox / trash things.
+
+This is ok for me when you have shut down the mailclient.
+
+One exception is the sent thing. Every tool has it ...
+And we normally need that thing. At least i myself peek from time to
+time in there what i did sent to a mail last week ...
+
+So sent folders are transfered. At least i try that.
+
+If you make a scanfile you will find most info for the folders and for
+the files.
+
+Here we have a small one in.
+
+### begin
+# description of the source mail directory for mailtransfer
+# Fri Feb 23 23:16:28 2018
+# we have a list of input directories in here,
+# with the files candidates for a transfer to the target system
+#
+# if you want to tweak the transfer then this is the first spot to do it.
+#
+# you can add a targetdir
+# you can change the prefix directory, or delete it ... 
+# you can add a hint for ignoring a file 
+# you can edit the list of files ..
+# the # is a comment for the line, so you can add a # in front to comment but not loose a line ...
+#
+# if you delete a folder, do it for the complete BASENAME to ENDBASENAME thing...
+#
+# you have some checks in in the next phase, the generator ...
+# and no file is moved/changed ... only scnanned
+#
+# so feel free to make some adjustments if you need to
+#
+# if you have trouble : email to atr at atrsoft dot de
+# replace at with the mail at char and dot with the . char
+# and dont forget to sent the scan and plan files if you have them.
+# please, dont try to sent em a whole mail folder ... this will overload
+# my mail system only. 
+# and dont forget to zip the files first if they are more than a meg 
+# 
+# if you are done generate a plan by use of the generator
+#
+# perl MailTransferGen.pl targetsystem filename_of_this_scanfile dir planfile
+#
+MAILSYSTEM:seamonkey
+SOURCE:/home/ar/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders
+TARGET:targetunknown
+PREFIX:anton47
+TOTAL:0K
+#
+BASENAME:anton04
+NORMPATH:/anton04
+SOURCEPATH:anton04
+FILES:0:0
+ENDBASENAME:anton04
+#
+BASENAME:anton1
+NORMPATH:/anton04/anton1
+SOURCEPATH:anton04.sbd/anton1
+FILES:0:0
+ENDBASENAME:anton1
+ENDMAILSYSTEM:seamonkey
+### end
+
+Most is comment to help the one who finds the file to understand what she or
+he has in ...
+
+Beside the comemnts who start with a # at the first column we have:
+
+- MAILSYSTEM:seamonkey
+  thats the system we scanned... at least that you told the thing 
+
+- SOURCE:/home/ar/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders
+  thats the starting point of the scan
+  
+- TARGET:targetunknown
+  thats the thing we want to target .. for now its unknown
+  
+- PREFIX:anton47
+  thats a thing to use in the generator for making things fit - see
+  generator for it
+  
+- TOTAL:0K
+  thats an info to make you know what you will need at last ...
+
+The rest is the info for the structure and for the files.
+
+This was an empty system, so its short but empty ...
+
+For a thing with full info see the example folder and the kmail scan
+in there ...
+
+For the folder you have the following info in :
+
+- BASENAME:anton04
+  that is the name of the folder after some transformations.
+  its a so called normalized name, independent of the thing the
+  tool uses
+  
+- NORMPATH:/anton04
+  this is the normalized path - its a description of the folder and the
+  containing subfolders till we hit the last thing - the folder in question
+  
+- SOURCEPATH:anton04
+  This is the path from the starting point to the directory - its depending
+  on the system and it is in case of the seamonkey and thunderbird
+  here a filename in fact.
+  For the systems that use maildir its a directory
+  
+- FILES:0:0
+  This is the info about the number of files the transfer found interesting.
+  It has for every system some rules in to decide when a file is interesting.
+  So this can be different from the realnumber of files in there
+  
+
+If we have files in - its like this for the files ...
+
+We take a snipplet from a kmail scan here
+
+### begin 
+BASENAME:a2e
+NORMPATH:/buy/ebay/bad/a2e
+SOURCEPATH:.buy.directory/.ebay.directory/.bad.directory/a2e/cur
+SUBDIR:cur
+FILES:7:0
+FILE:1420393084.16225.3j4Ns:2,S
+FILE:1420393084.16225.qnzSw:2,S
+FILE:1420486129.12792.u3g7F:2,S
+FILE:1420224460.12553.BC6NA:2,S
+FILE:1420301750.12472.FUg6C:2,S
+FILE:1420486129.12792.KB5Pj:2,S
+FILE:1420745507.12656.o4aTX:2,S
+ENDBASENAME:a2e
+### end
+
+So we have here real meat in - its 7 files.
+They are all mail files and i have every name of it in here.
+
+For the mbox files and tunderbird and seamonkey things are a bit different.
+
+Next thing that we do when we have make a plan is to decide where to put
+the mails in.
+
+This means we need the target now.
+
+That sad - its the kind we need and we need that for the generator.
+
+For the source - everything is in the scanfile - we can adjust the file,
+but if we lie to the system - lets say you make a scanfile from a
+thunderbird but then rename it a kmail - well, thats your problem then ...
+
+For the plan its like adding information to the scan.
+
+The things that are not in so far are now determined.
+
+We have here a head part of a plan .
+
+### begin
+# the  # is a comment for the line, so you can add a #  in front to comment but not loose a line ...
+MAILSYSTEM:evolution
+SOURCE:kscan93.txt
+TARGET:/opt/tmp/mails/evotarget
+PREFIX:anton93
+SOURCEMAILSYSTEM:kmail
+SOURCEMAILDIR:/opt/tmp/mails/kmail/Mail
+#
+### end
+
+Now we have:
+- MAILSYSTEM:evolution
+  This is the system that plan is for.
+  
+- SOURCE:kscan93.txt
+  This is the scanfile we have used for generation
+  
+- TARGET:/opt/tmp/mails/evotarget
+  This is the directory we will use as starting point for the transfer
+  
+- PREFIX:anton93
+  Again the prefix thing.
+  
+- SOURCEMAILSYSTEM:kmail
+  This is the mailsystem we used in the scanfile.
+  
+- SOURCEMAILDIR:/opt/tmp/mails/kmail/Mail
+  This is the starting directory for the scan.
+
+This results in new entries for every folder. Here an example.
+
+### begin
+BASENAME:a2e
+NORMPATH:/buy/ebay/bad/a2e
+SOURCEPATH:.buy.directory/.ebay.directory/.bad.directory/a2e/cur
+SUBDIR:cur
+TARGETMETA:
+TARGETBASE:.anton93.buy.ebay.bad.a2e
+TARGETDATACUR:.anton93.buy.ebay.bad.a2e/cur
+TARGETDATANEW:.anton93.buy.ebay.bad.a2e/new
+TARGETDATATMP:.anton93.buy.ebay.bad.a2e/tmp
+FILES:7:0
+READFILE:1420393084.16225.3j4Ns:2,S
+WRITEFILE:1420393084.16225.3j4Ns:2,S
+READFILE:1420393084.16225.qnzSw:2,S
+WRITEFILE:1420393084.16225.qnzSw:2,S
+READFILE:1420486129.12792.u3g7F:2,S
+WRITEFILE:1420486129.12792.u3g7F:2,S
+READFILE:1420224460.12553.BC6NA:2,S
+WRITEFILE:1420224460.12553.BC6NA:2,S
+READFILE:1420301750.12472.FUg6C:2,S
+WRITEFILE:1420301750.12472.FUg6C:2,S
+READFILE:1420486129.12792.KB5Pj:2,S
+WRITEFILE:1420486129.12792.KB5Pj:2,S
+READFILE:1420745507.12656.o4aTX:2,S
+WRITEFILE:1420745507.12656.o4aTX:2,S
+ENDBASENAME:a2e
+### end
+
+This time we have also the target information in. Thats five new fields here.
+
+- TARGETMETA:
+  This is empty for the maildir systems.
+  If the thing is an mbox file its the target path to the file
+  
+- TARGETBASE:.anton93.buy.ebay.bad.a2e
+  The directory for the targets folder.
+  
+- TARGETDATACUR:.anton93.buy.ebay.bad.a2e/cur
+  The cur directory for the target - or same as base for the mbox files
+  
+- TARGETDATANEW:.anton93.buy.ebay.bad.a2e/new
+  The new directory for the target - or same as base for the mbox files
+  
+- TARGETDATATMP:.anton93.buy.ebay.bad.a2e/tmp
+  The tmp directory for the target - or same as base for the mbox files
+
+So now we have a first time in the prefix.
+
+Its in the first directory.
+
+This makes it possible to separate the transferd mails from the actual
+structure in the new mailclient.
+I prefere to use it - if you dont need it set it empty with
+-p EMPTY
+or edit the scanfile ...
+
+This is done for every folder, so the whole structure resides in a new
+directory. The mailclient for the target is using it and so we get
+the transfer into one major folder - we have this way it separate from
+the things that are already in there...
+
+For the files itself we have depending on the kind of thing a
+READFILE and WRITEFILE thing, or a FILEMAILBOX or an APPENDFILE.
+
+The executor then can make the thing that is needed for it...
+READ and WRITE results in a copy of the files, FILEMAILBOX is for the
+maildir systems a split into new mailfiles in the cur directory,
+The append is done for the transfer into the mbox systems to append
+the mails into one big file (did i say i dont like that ?)
+
+Next is to give that thing to the executor.
+
+This one simply does the thing....
+
+So we get real directories created from the target on with the names in the
+targetbase, and the files are handled as needed for the combination.
+
+We get a log file from the executor. This has all info in again.
+
+So if there is a problem we have the scanfile, the planfile and the log
+to see what was in and what made then the problem ... at least in theory.
+
+Next is then - after the executor did it and you have no problem -
+to integrate the result into your mailclient.
+
+This is depending on things that are out of reach for the scripts.
+
+You can make a transfer into a target - then copy the result into
+the mailclient storage and start it up.
+
+Or you can directly transfer into the mailclient storage.
+
+Depends on your needs.
+
+Most people have big hard disks, so they simply do the later.
+
+I have only limited space, so i first make the transfer into an inbetween
+target, then delete the old mailclient and then integrate the inbetween into
+my new mailclient...
+
+Choose your thing - but check for the size of the disk and the need that the
+scanner found and is in TOTAL ...
+
+After the transfer is done and the integration made the things depend on the
+target mailclient. Some need a little help, others do it themself...
+
+-------------------------------------------------------------------------------
+
+Doing it for claws-mail
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/.claws-mail/accountrc
+
+This is a text file. Open it.
+
+Search for inbox.
+
+The path with your storage is in there.
+
+You probably find something like this:
+
+###begin
+max_news_articles=300
+inbox=#mh/claws-Mail/inbox
+local_inbox=#mh/claws-Mail/inbox
+imap_directory=
+###end
+
+Then the thing starts in this case at $HOME/claws-Mail ...
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl claws-mail $HOME/claws-Mail scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl claws-mail scanfile $HOME/claws-Mail planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+
+Recognition:
+
+You start the thing.
+
+Nothing is there (haha ...)
+
+Select the main folder.
+
+Then right click.
+
+In the menu you find an entry for a foldertree renew option.
+
+Doit.
+
+After this you should have the new parts in.
+
+-------------------------------------------------------------------------------
+
+Doing it for evolution
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/.local/share/evolution/mail/local
+
+Search for .Outbox - its a directory.
+
+Then the thing starts in this case at $HOME/.local/share/evolution/mail/local
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl evolution $HOME/.local/share/evolution/mail/local scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl evolution scanfile $HOME/.local/share/evolution/mail/local planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+
+Recognition:
+
+You start the thing.
+
+Only the folder for prefix or the folders located directly in are there.
+
+You have to change into the folder - still nothing happens.
+
+If you switch to another folder then an internal scan is done and the index
+data rebuild. Then you have the number of mails for the folder.
+
+When you then switch to the folder again you have also the mails in.
+
+So switching into the folders is the trick.
+
+-------------------------------------------------------------------------------
+
+Doing it for kmail
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/.local/share/akonadi_maildir_resource_0
+
+Search for outbox - its a directory.
+
+Then the thing starts in this case at $HOME/.local/share/akonadi_maildir_resource_0
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl kmail $HOME/.local/share/akonadi_maildir_resource_0 scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl kmail scanfile $HOME/.local/share/akonadi_maildir_resource_0 planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+
+Recognition:
+
+You start the thing.
+
+Your prefix folder is in - or the folders if you dont have an prefix...
+
+The kmail scans in background, so it can take some time...
+
+-------------------------------------------------------------------------------
+
+Doing it for mutt
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/Mail
+
+Create in mutt a new folder - by accepting the default - and you have a
+file in with that name.
+
+Then the thing starts in this case at $HOME/Mail
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl mutt $HOME/Mail scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl nutt scanfile $HOME/Mail planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+Hint:
+I have no concept of naming for mutt found by getting through its
+create and change folder thing.
+So i have made my own convention. I use the normbase part as the filename,
+and the same with a .folder extension as a directory to put the others in.
+
+That might be overkill - you have to simply try that or you have to move the
+directories then for yourself ..
+
+Recognition:
+
+You start the thing.
+
+You change into the new subfolder and the files are there ...
+
+
+-------------------------------------------------------------------------------
+
+Doing it for sylpheed
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/.sylpheed-2.0/folderlist.xml
+
+This is a xml file - so normally a text file too. Open it.
+
+Search for folderlist.
+
+Search for folder then.
+
+The first folder is the base directory of the storage, normally it
+has the name sylpheed as a tag, the path then is it.
+
+You probably find something like this:
+
+###begin
+<?xml version="1.0" encoding="UTF-8"?>
+
+<folderlist>
+    <folder type="mh" name="sylpheed" path="/home/ar/mails/sylpheed">
+###end
+
+Then the thing starts in this case at $HOME/mails/sylpheed ...
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl sylpheed $HOME/mails/sylpheed scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl sylpheed scanfile $HOME/mails/sylpheed planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+
+Recognition:
+
+You start the thing.
+
+Nothing is there (haha ...)
+
+Select the main folder.
+
+Then right click.
+
+In the menu you find an entry for a foldertree renew option.
+
+Doit.
+
+After this you should have the new parts in.
+
+-------------------------------------------------------------------------------
+
+Doing it for seamonkey
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/.mozilla/seamonkey/profiles.ini
+
+This is a textfile. Open it.
+
+You have a so called INI format there - its all windowish in these
+mozilla things... so get used to it.
+
+Search for the Profile in question - you can have multiple ...
+
+I use here the first one :
+
+### begin
+[Profile0]
+Name=default
+IsRelative=1
+Path=hl7k6jo1.default
+Default=1
+### end
+
+The path is it. Its a subdirectory in this directory ... so its here
+
+$HOME/.mozilla/seamonkey/hl7k6jo1.default
+
+In there you have the directory Mail, and in there the subdirectory
+Local Folder (again, an space in a directory name ... windowish ...)
+
+So the storage starts at 
+$HOME/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl seamonkey "$HOME/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders" scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl seamonkey scanfile "$HOME/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders" planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+
+Recognition:
+
+You start the thing.
+
+Switch to mails.
+
+Nothing is there (haha ...)
+
+Create a new folder.
+
+Open the folders properties.
+
+You find an Adress box entry in.
+
+Edit the entry to match your prefix directory - or if you did not use one
+do it for the first folder you need...
+
+Then the subtree is visible.
+
+-------------------------------------------------------------------------------
+
+Doing it for thunderbird
+
+Where to start the scanner ?
+
+Good start is to see into $HOME/.thunderbird/profiles.ini
+
+This is a textfile. Open it.
+
+You have a so called INI format there - its all windowish in these
+mozilla things... so get used to it.
+
+Search for the Profile in question - you can have multiple ...
+
+I use here the first one :
+
+### begin
+[Profile0]
+Name=default
+IsRelative=1
+Path=o0hd68d2.default
+Default=1
+### end
+
+The path is it. its a subdirectory in this directory ... so its here
+
+$HOME/.thunderbird/o0hd68d2.default
+
+In there you have the directory Mail, and in there the subdirectory
+Local Folder (again, an space in a directory name ... windowish ...)
+
+So the storage starts at 
+$HOME/.thunderbird/o0hd68d2.default/Mail/Local Folders
+
+Scanning:
+
+Then you can scan the usual way:
+
+perl MailTransferScan.pl thunderbird "$HOME/.thunderbird/o0hd68d2.default/Mail/Local Folders" scanfile
+
+Generator:
+
+Same here.  Locate the storage as already above.
+
+So in this case it would be
+
+perl MailTransferGen.pl thunderbird scanfile "$HOME/.thunderbird/o0hd68d2.default/Mail/Local Folders" planfile
+
+Integration:
+
+
+If you generate for direct transfer you are through.
+
+If you have choosen an intermediate targetdirectory simply copy or move
+the targetdir content to your real storage directory.
+
+
+Recognition:
+
+You start the thing.
+
+Your new folders are there (this is different from seamonky i think ... ).
+
+If not - make a folder, select it, make the properties, change the adress...
+
+Same as for seamonky then.
+
+-------------------------------------------------------------------------------
+
+What is that vanilla thing ?
+
+The vanilla came in as a concept first.
+
+I had seen the claws and sylpheed and thought - why not ?
+
+So i decided to make a similar thing, but for the maildir category with the
+three subdirectories.
+
+I have no mailclient or so, but i find it easy to check for things that way.
+
+So i integrated a new system for this - the vanilla system.
+
+It has a flaw - you should not use the subdirectories names for the folder ...
+
+But i can live with that. 
+
+Now i plan to use this as a starting point to get rid of my procmail
+problem - its no longer started on fedora 27 so far - and filter
+the mailbox myself.
+
+-------------------------------------------------------------------------------
+
+Restrictions
+
+There are so many ...
+
+- no check for disk space
+  you simply have to check for your own.
+
+- no check for broken mails
+  I parse the header in case i have to split - but thats all
+  If you have broken mail files - the make it to the other sstem.
+  If that is a mbox type - well, thats your choice ...
+
+- no checks for structure
+  I dont check that at all.
+  So if you have broken directories - or a s-link hack in
+  the thing can get rough.
+  I dont plan to make secure checks, but i try next time to integrate
+  at least some loop checkings...
+
+- no checks for the parameters
+  Well, i believe in you. If you have the need to do this - you will
+  not try to make funny things with the thing - ok ?
+
+- no read checks
+  I check nearly every write - but no reads.
+  So if your files are - broken / damaged / have special security things in
+  its possible that i read only parts.
+  Thats bad for the maildir things, but it can be VERY BAD for the mbox
+  fraction ...
+
+- intensive readings
+  For the things that have to make up the numbers - claws and sylpheed - its
+  definetly much reading of directory info - i read for every file the dir
+  in and recalc the highest filenumber then... should use a cache for this
+
+- intensive read in for mbox files
+  if i split them i read in first the whole file.
+  That means i need much memory in case you have big files in.
+  And this is othen the case for mbox in thunderbird and seamonkey.
+  
+Hope i could cover them all .
+
+-------------------------------------------------------------------------------
+
+How to adjust things
+
+First things first.
+
+The best spot to adjust for changing names is the scanfile.
+
+If you want to change names for folders you can edit there the normpath.
+
+This is used to generate the new paths for the plan.
+
+Dont try to edit the sourcepath - this MUST be correct or you end up
+loosing info.
+
+Also dont play games with the system - if you made a scan for a kmail
+its not a scan from an evolution ...
+
+The generator needs correct info. Period.
+
+You can change the prefix. Thats a good thing if you forgot it in the call
+of the scanner - but you can also do that for the generator with a -p ...
+
+If you plan to move your sourcetree - for example to make diskspace free
+- you have to do that for the SOURCE too ...
+
+If you want to kill a file - simply comment it with a # in the first column.
+
+WARNING: dont forget to comment a hint then - it must be balanced,
+both or none ...
+
+If you want a new filename - its in the plan, not in the scan.
+
+For mbox systems: instead of renaming the files you must rename NORMPATH last
+part. This will do the job ...
+
+In the planfile only limited things schould be done.
+Its better to do the things in scanfile.
+Its possible to cahange names for WRITEFILE there.
+
+For the target mbox systems you can do in plan a change for the
+naming in targetmeta. But try to be gentle - only the last part, the
+parts before should not be changed. Again : Do it in scanfile if possible.
+
+If you need to exclude a folder: comment or delete the whole thing, not only
+parts ! From BASENAME to ENDBASENAME please !
+
+-------------------------------------------------------------------------------
+
+How to handle errrrrrroorrrs  - ups ...
+
+There is no perfect world.
+
+So errors are possible.
+
+First of all - the thing before you scan.
+
+You need to know about your source system.
+
+Did you have a - unusual - base directory ?
+
+From when ?
+
+Why ?
+
+Any bells ?
+
+The next thing is the scanner.
+
+It can break.
+
+If you have a bad disk - physical - even a read can get corrupted.
+So you should not use it against a bad disk. Copy first the things to a
+good one. Then use the scanner.
+
+If the scanner has a problem - it gives you an Error message and stops.
+
+So check the output in the shell window for the thing.
+
+If you have a lot of output - reroute the output to a file and check it for
+ERROR -  i write this all the time upper case ....
+
+The number gives you a hint . 000 to 099 is in the scripts for scanner.
+
+A 100 to 199 is in the Data , a 200 to 299 in the list.
+
+The problem is more othen a failure in writing then really reading, so check
+also the working directory.
+
+For the plan the thing is the same. Again its only writing of the plan itself.
+
+For the executor everthing is different.
+
+Here we have REAL creation of directories, and files.
+
+Every error is a problem. So dont ignore them.
+
+You find in the log file in the last lines the problematic error.
+
+Use a simple tail or an editor and check it !
+
+When you find that only one file is problematic and you can spare it - edit
+the plan, remove the file - if there is READ WRITE both - and then try again.
+
+Important thing : if you have an mbox system you MUST restart with a fresh
+target directory. Dont run multiple times - you will get multiple times
+the files then in !
+First clenaup the target directory, then rerun !
+
+For the maildir systems - this can partly happen for split - so do this also
+for them if you have a mbox in the source ...
+
+Did i suggest a prefix ? perhaps its cleaner to reset it than a broken
+mailclients storage after a direct inplace transfer ...
+
+-------------------------------------------------------------------------------
+
+What to do if your disk space is not enough for old and new ?
+
+There is a good and a bad answer.
+
+First the good ... it can be done.
+
+Now the bad.
+
+It depends on the mail system how it works.
+
+First of all - you can first make an transfer from a simulated storage.
+
+You take the real storage directory, pack it with tar or zip, then
+unpack it on a partion thats big enough for it.
+
+So i have done my things for my server mail account on my notebook -
+with not enough disk free even to hold the original mails.
+
+Next is then to check if the magic TOTAL in the scan is - well, you guess it..
+
+If its ok - transfer to the new target system.
+
+If not ....
+
+There is a way to do this with every system ...
+
+First i have created a so called base on a partion with enough free space.
+
+Then i have checked the thing in question for its capability to use
+a different directory than the default.
+
+This is now the point where we have to do it for every system..
+
+------
+
+claws-mail
+
+This one accepts a symbolic link as a directory.
+
+So you make a s-link to the target and you are through.
+
+Recognition works this way for me:
+### begin
+  /home/ar/claws-Mail:
+  insgesamt 4
+  drwx------.  8 ar ar  120 25. Feb 20:16 .
+  drwxr-x---. 56 ar ar 4096 24. Feb 23:26 ..
+  drwx------.  4 ar ar  105 25. Feb 19:22 anton1
+  lrwxrwxrwx.  1 ar ar   25 23. Feb 22:16 anton23 -> /opt/tmp/mails/clawtarget
+### end
+
+Did i say someting about a prefix directory ?
+
+-------
+
+evolution
+
+This is a bit more tricky. You cannot use a symbolic link directly.
+
+So i did a small trick - created the s-link one directory closer to the root,
+and copied then the content to the new target
+
+### begin
+  /home/ar/.local/share/evolution/mail:
+  insgesamt 0
+  drwxrwxr-x. 5 ar ar  95 16. Feb 17:11 .
+  drwx------. 7 ar ar 101  4. Feb 21:12 ..
+  drwx------. 2 ar ar  96 25. Feb 19:52 d7f4fca20ba5efb8f86c2c44ebc076fb9cf09756
+  lrwxrwxrwx. 1 ar ar  20 10. Feb 22:25 local -> /opt/tmp/mails/local
+### end
+
+Rest works as expected then.
+
+-----------
+
+kmail
+
+This is a bit easier  - you can use a symbolic link.
+
+But the folder itself schould be a directory after all ...
+
+The akonadia itself creates the new tmp and cur on the fly, so a s-link
+is possible - but make here a directory is ok for me ..
+
+### begin
+  /home/ar/.local/share/akonadi_maildir_resource_0:
+  insgesamt 8
+  drwxrwxr-x. 11 ar ar  168 25. Feb 20:27 .
+  drwxr-xr-x. 40 ar ar 4096 23. Feb 23:39 ..
+  drwxrwxr-x.  5 ar ar   39 25. Feb 20:27 anton99
+  lrwxrwxrwx.  1 ar ar   41 25. Feb 20:25 .anton99.directory -> /opt/tmp/mails/ktarget/.anton99.directory
+### end
+
+Did i say someting about a prefix directory ?
+
+-------
+
+mutt
+
+Well, this has no concept of a directory tree, instead you make with
+the change folder simply some navigation and you are there...
+
+So i simply didnt check a s-link in here, but it should work for the
+navigation.
+
+For the files - i dont know..
+
+-----------
+
+sylpheed
+
+This one i tricked. I did simply create the basic folder directly in the
+big free space partition. So no need for a s-link trick ...
+
+But if you need to - do a symbolic link should work as for claws-mail too.
+
+But i didnt test it ...
+
+### begin
+<folderlist>
+    <folder type="mh" name="sylpheed" path="/opt/tmp/mails/sylpheed">
+### end
+
+Works for me.
+
+------------
+
+seamonkey
+
+This one does not accept a symbolic link (again a windowish thing... on unix
+you should do that ... )
+
+So i made the same trick as for the evolution.
+
+Made the s-link a directory nearer to the root ... copied the rest to that
+
+### begin
+  /home/ar/.mozilla/seamonkey/hl7k6jo1.default:
+  insgesamt 13760
+  drwx------. 6 ar ar     4096 23. Feb 23:41 .
+  drwx------. 3 ar ar       50 23. Feb 22:28 ..
+  -rw-rw-r--. 1 ar ar     1375 23. Feb 22:29 abook.mab
+  -rw-------. 1 ar ar     1439 23. Feb 22:31 addons.json
+  -rw-rw-r--. 1 ar ar        0 23. Feb 23:41 AlternateServices.txt
+...
+  lrwxrwxrwx. 1 ar ar       32 23. Feb 23:30 Mail -> /opt/tmp/mails/seamonkebase/Mail
+### end
+
+----------
+
+thunderbird
+
+This one does not accept a symbolic link (again a windowish thing... on unix
+you should do that ... )
+
+So i made the same trick as for the evolution.
+
+Made the s-link a directory nearer to the root ... copied the rest to that
+
+### begin
+  /home/ar/.thunderbird/o0hd68d2.default:
+  insgesamt 4616
+  drwx------. 6 ar ar    4096 25. Feb 21:14 .
+  drwx------. 3 ar ar      50 11. Feb 20:40 ..
+  -rw-rw-r--. 1 ar ar    1375 11. Feb 20:40 abook.mab
+  -rw-------. 1 ar ar      24 11. Feb 20:40 addons.json
+...
+  lrwxrwxrwx. 1 ar ar      31 16. Feb 20:54 Mail -> /opt/tmp/mails/thunderbase/Mail
+### end
+
+-------------
+
+vanilla
+
+Well, thats mine after all - so a s-link works perfectly ... :)
+
+
+-------------------------------------------------------------------------------
+
+History
+
+The thing is as always.
+
+You fire up your new installed system, then you fire up your new mailclient
+version.
+
+Then you have a more and more ... disappointing experiance ...
+
+Then you decide to give it a try for a new folder here and there ...
+
+Then you realise its not working right ...
+
+Then you want to switch to another ...
+
+And after reading tons of nice and shiny descriptions like ...
+
+... make the folders exactly like in the old one ...
+
+... sometimes a file is not transfered ....
+
+... for me it worked ...
+
+... for me it worked not at all ...
+
+
+you decide to do it not dirty.
+
+You are a software developer after all ...
+
+So i started to make an analyse and found that most things were at least
+a problem of the new index thing of my former mailclient.
+
+It had simply changed - and i had not done every upgrade one by one ...
+
+So i got out of sync for the indexing and ...
+
+Things became bad.
+
+Very bad.
+
+I lost the ability to do simplest lookups, lost even the possibility
+to select mails in folders that i had still in the main gui ...
+
+Thats bad. I needed not the "make all folders like in the old " thing, i
+needed a total clean export and import.
+
+But there is none - no one seems to like an neutral export at all ..
+
+Everyone likes an import if - its an outdated and long gone version
+for the others ... haha ... nice thinking...
+
+So i began the scan thing.
+
+First with find - but using this in a shell script was far from good
+so i switched to perl and then to the perl find.
+
+OK. I had made some steps, and i realized that it would be better to do it
+in several steps, not one.
+
+I had first the scan of the old files, then the  decide what to do thing,
+the creation of new directories ...
+
+So i came up with a scanner.
+
+This was a thing that worked nearly ok - found after some debugging that i
+had still an mbox file in my system - its a maildir based today...
+
+So much for theory.
+
+I made the analyse for the target one - and found the directories very
+different at best ...
+
+OK. So the thing became after the scanner the generator - still no damage
+done, only a new text file ...
+
+This gave me the option to do the thing with the normalized names.
+
+And then a colleague of mine came with "oh, and i want to migrate then to ...."
+
+Of course not MY favorite one ...
+
+So i decided to make the executor work for that too.
+
+After some playing with it i had found nearly everthing ok ...
+
+Had made my experiance with evolution - and the scan and rebuild index at exit
+thing...
+
+Then i had seen the msf thing in thunderbird - oh boy, what a mess ...
+
+Then i tried the others ... only to see that its still one of the three big
+that i want to use - but now i could do it for all of them ...
+
+Then i integrated more checks and more errors.. so i got again debugging
+sessions to do, but i found next problems now faster ...
+
+And yes, i did even learn a thing about using the oo way with perl...
+
+So i finally made a hunt for the possible systems ...
+
+And came up with only a hand full more.
+
+At last i decided to make an export and import thing for my own.
+
+So i introduced the vanilla - again errors and again more debugging ..
+
+Found the problems for a structure where no structure was and - bingo.
+
+Now i peeked at the last ones -- but many only made a cold shoulder...
+
+I tried the command line tools - mutt, pine .. ok, alpine now ..
+
+And found them to do the mbox thing just like thunderbird....
+
+Then i tried one last time to get the beasts up that were not
+running on the box ... but no luck.
+
+So i ended with the list i have now (25.02.2018 german time) in.
+
+Hope i will make it now with my plan to make a automatic import.
+
+And have decided to give this to YOU so you can solve your problem with it.
+
+Happy mailing.
+
+------------------------------------------------------------------
+
+Contact
+In case you have questions - read this howto. Check the source.
+
+If this is not enough sent me a mail
+
+atr AT atrsoft DOT de
+
+replace AT with the mails at sign and dot with the . and delete the spaces.
+
+This is against the automates that hunt fro email adresses ..
+
+Next.
+
+If you have trouble - i read mails not on a per day, more a per
+week base .. you get answer, but it can take a week.
+
+Next.
+
+If you have no clue - sent me the scanfile, the planfile, the logfile.
+
+NO Mailtree - i dont plan to access somebody mails - and it would be
+impossible for real big ones... have 3 G for myself ...
+
+So the three files and the output of them - a rerote into a file.
+
+please - dont estimate i cna read minds .. if you did something after
+a scan and changed something here and there ... i will not get it.
+
+Next.
+
+Pack those files into one zip / tar .
+
+And compress it - or my mailbox will not handle it ...
+
+Thanks for helping me to help you ...
+
+The source is on github, so i hope somebody will still step in and
+maintain it when i am gone - then the email above  of course will
+change to that guy ..
+
+At last :
+
+This is work under the APACHE 2.0 license, so dont do silly things with it..
+
