@@ -5,6 +5,7 @@ package MailTransferDirListMutt;
 # part of the MailTransfer script system
 #
 # do it the mutt way
+$version = '1.0.0';
 
 # we are a list after all ...
 use parent 'MailTransferDirList';
@@ -34,16 +35,6 @@ sub add_directory {
 
     my $subdir = '';
     
-    if ($path[$#path] eq 'new') {
-	# we have a new subdirectory at last ...
-	$subdir = pop @path;
-    } elsif ($path[$#path] eq 'cur') {
-	# we have a cur subdirectory at last ...
-	$subdir = pop @path;
-    } elsif ($path[$#path] eq 'tmp') {
-	# we have a tmp subdirectory at last ...
-	$subdir = pop @path;
-    }
     
     my ($basename,$normpath) = $self->get_normalized_path(@path);
     
@@ -55,20 +46,20 @@ sub add_directory {
 sub get_normalized_path {
     my $self = shift ;
     
-    my $ret = '';
-    my $b = '';
+    my $path = '';
+    my $basedir = '';
 
     my $dirs = $self->{'sourcefile'};
     
     foreach my $d (@_) {
 	my $nd = $d;
 
-	$b = $nd;
+	$basedir = $nd;
 	
-	$ret .= '/' . $nd;
+	$path .= '/' . $nd;
     }
 
-    return ($b,$ret);
+    return ($basedir,$path);
 }
 
 sub gen {
@@ -128,7 +119,15 @@ sub convert_folder_names_mutt {
     return \%e;
 }
 
+sub get_convert {
+    # helper : we need the converter in the others ...
+    my $self = shift;
+
+    return \&convert_folder_names_mutt;
+}
+
 sub filterit {
+    # we filter that directries out 
     my $self = shift ;
 
     my $c = shift;

@@ -12,13 +12,16 @@
 # a spot to start ? see the howto ...
 
 # our data structure
+$version = '1.0.0';
 
 BEGIN {
     push @INC, ".";
 }
 
+# we use the find to scan a tree of directories
 use File::Find;
 
+# our data structures
 use MailTransferDirListVanilla;
 
 use MailTransferDirListClaws;
@@ -39,6 +42,12 @@ use MailTransferDirListThunderbird;
 
 
 # check parameters
+
+$verbose = 1;
+if ($ARGV[0] eq '-q') {
+    shift;
+    $verbose = 0;
+}
 
 $prefix = '';
 if ($ARGV[0] eq '-p') {
@@ -66,7 +75,7 @@ if (
     ) {
     # we have a valid system in now ...
 } else {
-    print "sorry, but mailsystem $themailsystem is not supported.\n";
+    print "ERROR001: sorry, but mailsystem $themailsystem is not supported.\n" if $verbose;
     exit (1);
 }
 
@@ -80,7 +89,7 @@ $outfile = shift @ARGV;
 
 my $ofh;
 
-open($ofh, ">$outfile") or die "cannot open $outfile for output write. \n";
+open($ofh, ">$outfile") or die "ERROR007: cannot open $outfile for output write. \n";
 
 # we dont need a factory
 
@@ -116,6 +125,8 @@ if ($themailsystem eq 'thunderbird') {
     $dirlist = new MailTransferDirListThunderbird($infile, 'targetunknown');
 }
 
+$dirlist->verbose($verbose);
+
 if ($prefix  ne '') {
     $dirlist->prefix($prefix);
 }
@@ -147,7 +158,7 @@ if ( -d $infile ) {
     } 
 }
 else {
-    open(IN, "$infile") or die "cannot open the input file $infile \n";
+    open(IN, "$infile") or die "ERROR008: cannot open the input file $infile \n";
 
      while (<IN>) {
 
@@ -186,7 +197,7 @@ if ($ret == 0) {
 
     print "you have a total of " . $anz . " files with " . $t . " K ... check your free disk ..\n";
 } else {
-    print "ERROR001: check that, something was wrong...\n";
+    print "ERROR002: check that, something was wrong...\n";
 }
 
 exit ($ret);
@@ -260,7 +271,7 @@ sub wantedthunderbirdseamonkey {
 	    if ( index($msfonly, '.') > -1) {
 		# thunderbird and seamonkey does not accept a . as a regular name part, 
 		# so any file with that is not a thunderbird or seamonkey file
-		print "WARNING: ignore msf file $t ... has a dot in ...\n";
+		print "ERROR003: ignore msf file $t ... has a dot in ...\n" if $verbose;
 		return;
 	    }
 
@@ -274,8 +285,8 @@ sub wantedthunderbirdseamonkey {
 		my $k = int($size / 1024) + 1;
 		$dirlist->{'total'} += $k;
 		$dirlist->{'anz'} ++;
-		print "found $t ...\n";
-		print "total is $k K ...\n";
+		print "found $t ...\n" if $verbose;
+		print "total is $k K ...\n" if $verbose;
 	    }
 
 	    push @candidates, $t;
@@ -286,7 +297,7 @@ sub wantedthunderbirdseamonkey {
 	if ( index($_, '.') > -1) {
 	    # thunderbird and seamonkey does not accept a . as a regular name part, 
 	    # so any file with that is not a thunderbird or seamonkey file
-	    print "WARNING: ignore file $_ ... has a dot in ...\n";
+	    print "ERROR004: ignore file $_ ... has a dot in ...\n" if $verbose;
 	    return;
 	}
 	
@@ -313,8 +324,8 @@ sub wantedthunderbirdseamonkey {
 		my $k = int($size / 1024) + 1;
 		$dirlist->{'total'} += $k;
 		$dirlist->{'anz'} ++;
-		print "found $t ...\n";
-		print "total is $k K ...\n";
+		print "found $t ...\n" if $verbose;
+		print "total is $k K ...\n" if $verbose;
 	    }
 	    
 	    push @candidates, $t;
@@ -342,8 +353,8 @@ sub wantedmutt {
 		my $k = int($size / 1024) + 1;
 		$dirlist->{'total'} += $k;
 		$dirlist->{'anz'} ++;
-		print "found $t ...\n";
-		print "total is $k K ...\n";
+		print "found $t ...\n" if $verbose;
+		print "total is $k K ...\n" if $verbose;
 	    }
 	    
 	    push @candidates, $t;
@@ -354,7 +365,7 @@ sub wantedmutt {
 }
 
 sub ignore {
-    print "Ignore directory " . $_ . "\n";
+    print "ERROR005: Ignore directory " . $_ . "\n" if $verbose;
 }
      
 sub usage {

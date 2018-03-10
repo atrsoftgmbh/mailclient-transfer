@@ -66,7 +66,7 @@ the target. If you are nor thaving that see below in the What if ... thing..
 
 Then generate a plan from the scan.
 
-> perl MailTransferGen.pl vanilla vscan1.txt $HOME/vhome/newmails vplan1.txt 
+> perl MailTransferGen.pl vanilla  $HOME/vhome/newmails vscan1.txt vplan1.txt 
 
 Now execute the plan.
 
@@ -621,7 +621,7 @@ Here we have a small one in.
 # 
 # if you are done generate a plan by use of the generator
 #
-# perl MailTransferGen.pl targetsystem filename_of_this_scanfile dir planfile
+# perl MailTransferGen.pl targetsystem dir filename_of_this_scanfile planfile
 #
 MAILSYSTEM:seamonkey
 SOURCE:/home/ar/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders
@@ -911,7 +911,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl claws-mail scanfile $HOME/claws-Mail planfile
+perl MailTransferGen.pl claws-mail  $HOME/claws-Mail scanfile planfile
 
 Integration:
 
@@ -962,7 +962,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl evolution scanfile $HOME/.local/share/evolution/mail/local planfile
+perl MailTransferGen.pl evolution  $HOME/.local/share/evolution/mail/local scanfile planfile
 
 Integration:
 
@@ -1012,7 +1012,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl kmail scanfile $HOME/.local/share/akonadi_maildir_resource_0 planfile
+perl MailTransferGen.pl kmail $HOME/.local/share/akonadi_maildir_resource_0 scanfile planfile
 
 Integration:
 
@@ -1056,7 +1056,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl nutt scanfile $HOME/Mail planfile
+perl MailTransferGen.pl mutt $HOME/Mail scanfile planfile
 
 Integration:
 
@@ -1122,7 +1122,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl sylpheed scanfile $HOME/mails/sylpheed planfile
+perl MailTransferGen.pl sylpheed  $HOME/mails/sylpheed scanfile planfile
 
 Integration:
 
@@ -1196,7 +1196,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl seamonkey scanfile "$HOME/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders" planfile
+perl MailTransferGen.pl seamonkey "$HOME/.mozilla/seamonkey/hl7k6jo1.default/Mail/Local Folders" scanfile planfile
 
 Integration:
 
@@ -1273,7 +1273,7 @@ Same here.  Locate the storage as already above.
 
 So in this case it would be
 
-perl MailTransferGen.pl thunderbird scanfile "$HOME/.thunderbird/o0hd68d2.default/Mail/Local Folders" planfile
+perl MailTransferGen.pl thunderbird "$HOME/.thunderbird/o0hd68d2.default/Mail/Local Folders" scanfile planfile
 
 Integration:
 

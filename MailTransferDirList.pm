@@ -11,6 +11,8 @@ package MailTransferDirList;
 # so if you want another you have after loading the module overwrite it.
 # the folder has to exist .. or you cannot write to it ..
 #
+$version = '1.0.0';
+
 # there is an option to all scripts, -p for prefix, that reset the thing.
 # you can also overwrite it in the scan result and the plan
 
@@ -55,6 +57,8 @@ sub initialize {
     $self->{'total'} = 0;
 
     $self->{'anz'} = 0;
+
+    $self->{'verbose'} = 1;
 }
 
 sub new {
@@ -76,6 +80,10 @@ sub add_new_node {
 
     my $directory = $_[0];
     
+    if (defined $self->{'nodes'}->{$directory}) {
+	return; # we protect ourself from multiple inserting ...
+    }
+
     $self->{'nodes'}->{$directory} = new MailTransferDirData(@_);
 
     my $ret = $self->{'nodes'}->{$directory}->get_total();
@@ -83,7 +91,7 @@ sub add_new_node {
     my $anz = $#{$self->{'nodes'}->{$directory}->{'myfiles'}}; 
 
     if ($ret > 0) {
-	print "total is $ret K...\n";
+	print "total is $ret K...\n" if $self->verbose();
     
 	$self->add_total($ret);
 
@@ -98,11 +106,30 @@ sub add_directory {
     my $directory = $_[0];
 
     if (defined $self->{'nodes'}->{$directory}) {
-	print "already in : $directory \n";
+	print "already in : $directory \n" if $self->verbose();
     } else {
 	# print @_;
 	$self->add_new_node (@_);
     }
+}
+
+sub get_normalized_path {
+    # helper : do it like vanilla
+    my $self = shift;
+    
+    # we do the vanilla to normal thing here
+    my $path = '';
+    my $basedir = '';
+    
+    foreach my $d (@_) {
+	my $nd = $d;
+
+	$basedir = $nd;
+	
+	$path .= '/' . $nd;
+    }
+
+    return ($basedir,$path);
 }
 
 sub echo {
@@ -158,7 +185,7 @@ sub save {
 # 
 # if you are done generate a plan by use of the generator
 #
-# perl MailTransferGen.pl targetsystem filename_of_this_scanfile dir planfile
+# perl MailTransferGen.pl targetsystem  targetdir filename_of_this_scanfile planfile
 #
 ';
     if (!$ret) {
@@ -249,7 +276,7 @@ sub load {
 
 	    $self->{'targetmailsystem'} = $tsys;
 
-	    print "MAILSYSTEM $tsys \n";
+	    print "MAILSYSTEM $tsys \n" if $self->verbose();
 	    next;
       }
  
@@ -257,11 +284,11 @@ sub load {
 	    my $tsys = $1;
 
 	    if  ($self->{'targetmailsystem'} ne $tsys) {
-		print "ERROR207: the scanner didnt match MAILSYSTEM and ENDMAILSYSTEM ... \n$self->{'targetmailsystem'}\n$tsys\n";
+		print "ERROR207: the scanner did not match MAILSYSTEM and ENDMAILSYSTEM ... \n$self->{'targetmailsystem'}\n$tsys\n";
 		return 1;
 	    }
 
-	    print "ENDMAILSYSTEM $tsys \n";
+	    print "ENDMAILSYSTEM $tsys \n" if $self->verbose();
 	    next;
       }
  
@@ -270,7 +297,7 @@ sub load {
 
 	    $self->{'targetmaildirectory'} = $source;
 
-	    print "SOURCE $source  \n";
+	    print "SOURCE $source  \n" if $self->verbose();
 	    next;
       } 
  
@@ -279,7 +306,7 @@ sub load {
 
 	    $self->{'prefix'} = $prefix;
 
-	    print "PREFIX $prefix  \n";
+	    print "PREFIX $prefix  \n" if $self->verbose();
 	    next;
       } 
  
@@ -292,7 +319,7 @@ sub load {
 	    @filesmailbox = ();    
 
 	    
-	    print "BASENAME $basename \n";
+	    print "BASENAME $basename \n" if $self->verbose();
 
 	    next;
       } 
@@ -300,37 +327,37 @@ sub load {
       if (m/^NORMPATH:(.*)/) {
 	  $normpath = $1;
 
-	    print "NORMPATH $normpath \n";
+	    print "NORMPATH $normpath \n" if $self->verbose();
 	  next;
       }
       
       if (m/^SOURCEPATH:(.*)/) {
 	  $sourcepath = $1;
-	    print "SOURCEPATH $sourcepath \n";
+	    print "SOURCEPATH $sourcepath \n" if $self->verbose();
 	  next;
       }
 
       if (m/^SUBDIR:(.*)/) {
 	  $subdir = $1;
-	    print "SUBDIR $subdir \n";
+	    print "SUBDIR $subdir \n" if $self->verbose();
 	  next;
       }
       if (m/^FILES:(.*):(.*)/) {
 	  @files = ();
 	  @filesmailbox = ();
-	    print "FILES $1 $2\n";
+	    print "FILES $1 $2\n" if $self->verbose();
 	  next;
       }
       if (m/^FILE:(.*)/) {
 	  my $f = $1;
 	  push 	  @files, $f;
-	    print "FILE $f \n";
+	    print "FILE $f \n" if $self->verbose();
 	  next;
       }
       if (m/^FILEMAILBOX:(.*)/) {
 	  my $f = $1;
 	  push 	  @filesmailbox, $f;
-	    print "FILEMAILBOX $f \n";
+	    print "FILEMAILBOX $f \n" if $self->verbose();
 	  next;
       }
 
@@ -366,7 +393,7 @@ sub gen_traget_structure {
     my $ret = 0;
     
     if ($self->{'targetfile'} eq $self->{'targetmaildirectory'}) {
-	print "ERROR209: plan does not work. dont accept a sourcedir same as targetdir\nSOURCEMAILDIR $self->{'targetmaildirectory'}\nTARGET$self->{'targetfile'} \n";
+	print "ERROR209: plan does not work. dont accept a sourcedir same as targetdir\nSOURCEMAILDIR $self->{'targetmaildirectory'}\nTARGET $self->{'targetfile'} \n"  if $self->verbose();
 	return 1;
     }
     
@@ -383,37 +410,37 @@ sub gen_traget_structure {
 # the  # is a comment for the line, so you can add a #  in front to comment but not loose a line ...
 ';
     if (!$ret) {
-	print "ERROR210: cannot write to gen structure output.\n";
+	print "ERROR210: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'MAILSYSTEM:' . $self->{'sourcemailsystem'} . "\n";
     if (!$ret) {
-	print "ERROR211: cannot write to gen structure output.\n";
+	print "ERROR211: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'SOURCE:' . $self->{'sourcefile'} . "\n";
     if (!$ret) {
-	print "ERROR212: cannot write to gen structure output.\n";
+	print "ERROR212: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'TARGET:' . $self->{'targetfile'} . "\n";
     if (!$ret) {
-	print "ERROR213: cannot write to gen structure output.\n";
+	print "ERROR213: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'PREFIX:' . $self->{'prefix'} . "\n";
     if (!$ret) {
-	print "ERROR214: cannot write to gen structure output.\n";
+	print "ERROR214: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'SOURCEMAILSYSTEM:' . $self->{'targetmailsystem'} . "\n";
     if (!$ret) {
-	print "ERROR215: cannot write to gen structure output.\n";
+	print "ERROR215: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
@@ -428,7 +455,7 @@ sub gen_traget_structure {
 
     $ret = print $fh 'ENDMAILSYSTEM:' . $self->{'sourcemailsystem'} . "\n";
     if (!$ret) {
-	print "ERROR216: cannot write to gen structure output.\n";
+	print "ERROR216: cannot write to gen structure output.\n" if $self->verbose();
 	return 1;
     }
     
@@ -476,11 +503,11 @@ sub load_plan {
 	    my $tsys = $1;
 
 	    if ($self->{'sourcemailsystem'} ne  $tsys) {
-		print "ERROR217: plan sourcemailsystem not the target\n$self->{'sourcemailsystem'}\n$tsys\n";
+		print "ERROR217: plan sourcemailsystem not the target\n$self->{'sourcemailsystem'}\n$tsys\n" if $self->verbose();
 		return 1;
 	    }
 
-	    print "MAILSYSTEM $tsys \n";
+	    print "MAILSYSTEM $tsys \n" if $self->verbose();
 	    next;
       }
  
@@ -488,11 +515,11 @@ sub load_plan {
 	    my $tsys = $1;
 
 	    if  ($self->{'sourcemailsystem'} ne $tsys) {
-		print "ERROR218: the scanner didnt match MAILSYSTEM and ENDMAILSYSTEM ... \n$self->{'tsourcemailsystem'}\n$tsys\n";
+		print "ERROR218: the scanner didnt match MAILSYSTEM and ENDMAILSYSTEM ... \n$self->{'tsourcemailsystem'}\n$tsys\n" if $self->verbose();
 		return 1;
 	    }
 
-	    print "ENDMAILSYSTEM $tsys \n";
+	    print "ENDMAILSYSTEM $tsys \n" if $self->verbose();
 	    next;
       }
  
@@ -501,7 +528,7 @@ sub load_plan {
 
 	    $self->{'ANALYSEFILE'} = $source;
 
-	    print "SOURCE $source  \n";
+	    print "SOURCE $source  \n" if $self->verbose();
 	    next;
       } 
  
@@ -511,7 +538,7 @@ sub load_plan {
 
 	    $self->{'prefix'} = $p;
 
-	    print "PREFIX $p  \n";
+	    print "PREFIX $p  \n" if $self->verbose();
 	    next;
       }
       
@@ -520,7 +547,7 @@ sub load_plan {
 
 	    $self->{'targetfile'} = $t;
 
-	    print "TARGET $t  \n";
+	    print "TARGET $t  \n" if $self->verbose();
 	    next;
       } 
  
@@ -529,7 +556,7 @@ sub load_plan {
 
 	    $self->{'targetmailsystem'} = $t;
 
-	    print "SOURCEMAILSYSTEM $t  \n";
+	    print "SOURCEMAILSYSTEM $t  \n" if $self->verbose();
 	    next;
       } 
  
@@ -538,10 +565,10 @@ sub load_plan {
 
 	    $self->{'targetmaildirectory'} = $t;
 
-	    print "SOURCEMAILDIR $t  \n";
+	    print "SOURCEMAILDIR $t  \n" if $self->verbose();
 
 	    if ($self->{'targetmaildirectory'} eq $self->{'targetfile'}) {
-		print "ERROR219: plan does not work. dont accept a sourcedir same as targetdir\nSOURCEMAILDIR $self->{'targetmaildirectory'}\nTARGET$self->{'targetfile'} \n";
+		print "ERROR219: plan does not work. dont accept a sourcedir same as targetdir\nSOURCEMAILDIR $self->{'targetmaildirectory'}\nTARGET$self->{'targetfile'} \n" if $self->verbose();
 		return 1;
 	    }
 	    
@@ -562,7 +589,7 @@ sub load_plan {
 	    @targetfiles = ();
 	    @filesmailbox = ();    
 	    
-	    print "BASENAME $basename \n";
+	    print "BASENAME $basename \n" if $self->verbose();
 
 	    next;
       } 
@@ -570,49 +597,49 @@ sub load_plan {
       if (m/^NORMPATH:(.*)/) {
 	  $normpath = $1;
 
-	    print "NORMPATH $normpath \n";
+	    print "NORMPATH $normpath \n" if $self->verbose();
 	  next;
       }
       
       if (m/^SOURCEPATH:(.*)/) {
 	  $sourcepath = $1;
-	    print "SOURCEPATH $sourcepath \n";
+	    print "SOURCEPATH $sourcepath \n" if $self->verbose();
 	  next;
       }
 
       if (m/^SUBDIR:(.*)/) {
 	  $subdir = $1;
-	    print "SUBDIR $subdir \n";
+	    print "SUBDIR $subdir \n" if $self->verbose();
 	  next;
       }
 
       if (m/^TARGETMETA:(.*)/) {
 	  $targetmeta = $1;
-	    print "TARGETMETA $targetmeta \n";
+	    print "TARGETMETA $targetmeta \n" if $self->verbose();
 	  next;
       }
 
       if (m/^TARGETBASE:(.*)/) {
 	  $targetbase = $1;
-	    print "TARGETBASE $targetbase \n";
+	    print "TARGETBASE $targetbase \n" if $self->verbose();
 	  next;
       }
 
       if (m/^TARGETDATACUR:(.*)/) {
 	  $targetdatacur = $1;
-	    print "TARGETDATACUR $targetdatacur \n";
+	    print "TARGETDATACUR $targetdatacur \n" if $self->verbose();
 	  next;
       }
 
       if (m/^TARGETDATANEW:(.*)/) {
 	  $targetdatanew = $1;
-	    print "TARGETDATANEW $targetdatanew \n";
+	    print "TARGETDATANEW $targetdatanew \n" if $self->verbose();
 	  next;
       }
 
       if (m/^TARGETDATATMP:(.*)/) {
 	  $targetdatatmp = $1;
-	    print "TARGETDATATMP $targetdatatmp \n";
+	    print "TARGETDATATMP $targetdatatmp \n" if $self->verbose();
 	  next;
       }
 
@@ -621,28 +648,28 @@ sub load_plan {
 	  @files = ();
 	  @targetfiles = ();
 	  @filesmailbox = ();
-	    print "FILES $1 $2\n";
+	    print "FILES $1 $2\n" if $self->verbose();
 	  next;
       }
       if (m/^READFILE:(.*)/) {
 	  my $f = $1;
 	  push 	  @files, $f;
 	  push     @targetfiles , $f;
-	    print "READFILE $f \n";
+	    print "READFILE $f \n" if $self->verbose();
 	  next;
       }
       if (m/^SPLITFILE:(.*)/) {
 	  my $f = $1;
 	  push 	  @filesmailbox, $f;
 
-	    print "SPLITFILE $f \n";
+	    print "SPLITFILE $f \n" if $self->verbose();
 	  next;
       }
       if (m/^HINT:(.*)/) {
 	  my $f = $1;
 	  pop 	  @files;
 	  pop     @targetfiles;
-	    print "HINT $f \n";
+	    print "HINT $f \n" if $self->verbose();
 	  next;
       }
 
@@ -650,8 +677,8 @@ sub load_plan {
 	  my $f = $1;
 	  pop @targetfiles;
 	  push     @targetfiles , $f;
-	    print "WRITEFILE $f \n";
-	    print "READFILE " . $files[$#files] . "\n";
+	    print "WRITEFILE $f \n" if $self->verbose();
+	    print "READFILE " . $files[$#files] . "\n" if $self->verbose();
 	  next;
       }
 
@@ -659,8 +686,8 @@ sub load_plan {
 	  my $f = $1;
 	  pop @targetfiles;
 	  push     @targetfiles , $f;
-	    print "WRITEFILE $f \n";
-	    print "APPENDFILE " . $files[$#files] . "\n";
+	    print "WRITEFILE $f \n" if $self->verbose();
+	    print "APPENDFILE " . $files[$#files] . "\n" if $self->verbose();
 	  next;
       }
 
@@ -668,7 +695,7 @@ sub load_plan {
 	  my $endbasename = $1;
 
 	  if ($basename ne $endbasename) {
-	      print "ERROR220: non match for basname and endbasenam \n$basename\n$endbasename\n";
+	      print "ERROR220: non match for basname and endbasenam \n$basename\n$endbasename\n" if $self->verbose();
 	      return 1;
 	  }
 
@@ -707,34 +734,34 @@ sub execute {
 
     my $ret = 0;
     
-    print "begin execution .... \n";
-    print " $lt \n";
+    print "begin execution .... \n" if $self->verbose();
+    print " $lt \n" if $self->verbose();
     $ret = print $fh '# execute of plan
 #
 # ' . $lt . '
 # 
 ';
     if (!$ret) {
-	print "ERROR221: cannot write to execute output.\n";
+	print "ERROR221: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     
     $ret = print $fh 'MAILSYSTEM:' . $self->{'sourcemailsystem'} . "\n";
     if (!$ret) {
-	print "ERROR222: cannot write to execute output.\n";
+	print "ERROR222: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'SOURCE:' . $self->{'sourcefile'} . "\n";
     if (!$ret) {
-	print "ERROR223: cannot write to execute output.\n";
+	print "ERROR223: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'TARGET:' . $self->{'targetfile'} . "\n";
     if (!$ret) {
-	print "ERROR224: cannot write to execute output.\n";
+	print "ERROR224: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
@@ -746,19 +773,19 @@ sub execute {
     
     $ret = print $fh 'PREFIX:' . $self->{'prefix'} . "\n";
     if (!$ret) {
-	print "ERROR226: cannot write to execute output.\n";
+	print "ERROR226: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'SOURCEMAILSYSTEM:' . $self->{'targetmailsystem'} . "\n";
     if (!$ret) {
-	print "ERROR227: cannot write to execute output.\n";
+	print "ERROR227: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print $fh 'SOURCEMAILDIR:' . $self->{'targetmaildirectory'} . "\n";
     if (!$ret) {
-	print "ERROR228: cannot write to execute output.\n";
+	print "ERROR228: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
@@ -770,20 +797,20 @@ sub execute {
     
     $ret = print $fh 'ANALYSEFILE:' . $self->{'ANALYSEFILE'} . "\n";
     if (!$ret) {
-	print "ERROR230: cannot write to execute output.\n";
+	print "ERROR230: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     
     $ret = print $fh "begin folderoperations execution .... \n";
     if (!$ret) {
-	print "ERROR231: cannot write to execute output.\n";
+	print "ERROR231: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
     $ret = print "begin folderoperations execution .... \n";
     if (!$ret) {
-	print "ERROR232: cannot write to execute output.\n";
+	print "ERROR232: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
@@ -823,10 +850,10 @@ sub execute {
     system "sync";
     
     if ($ret == 0) {
-	print "begin copyoperations execution .... \n";
+	print "begin copyoperations execution .... \n" if $self->verbose();
 	$ret = print $fh "begin copyoperations execution .... \n";
 	if (!$ret) {
-	    print "ERROR233: cannot write to execute output.\n";
+	    print "ERROR233: cannot write to execute output.\n" if $self->verbose();
 	    return 1;
 	}
     
@@ -944,10 +971,10 @@ sub execute {
 	}
     }
     
-    print "end execution .... code $ret\n";
+    print "end execution .... code $ret\n" if $self->verbose();
     $retout = print $fh "end execution .... code $ret\n";
     if (!$retout) {
-	print "ERROR234: cannot write to execute output.\n";
+	print "ERROR234: cannot write to execute output.\n" if $self->verbose();
 	return 1;
     }
     
@@ -957,6 +984,93 @@ sub execute {
     return 0;
 }
 
+
+sub get_from_msf_foldername {
+    # helper for the mozilla systems to get the real name in
+    my $self = shift;
+
+    # warning : this work not perfect. only a limited thing is working..
+    my $msf = shift;
+    my $filenode = shift;
+
+    my $fh ;
+
+    if (!open($fh, $msf)) {
+	# fallback, not nice but works ..
+	return $filenode;
+    }
+
+    my $reval = $filenode;
+
+    $reval =~ s:\\:\\\\:g;
+    $reval =~ s:\):\\):g;
+    $reval =~ s:\(:\\(:g;
+    $reval =~ s:\[:\\[:g;
+    $reval =~ s:\]:\\]:g;
+    $reval =~ s:\*:\\*:g;
+    $reval =~ s:\+:\\+:g;
+    $reval =~ s:\-:\\-:g;
+    $reval =~ s:\<:\\<:g;
+    $reval =~ s:\>:\\>:g;
+    $reval =~ s:\{:\\{:g;
+    $reval =~ s:\}:\\}:g;
+    $reval =~ s:\?:\\?:g;
+
+    my $i ;
+    my $limit = length $reval;
+
+    my $revalf = '';
+    for ($i = 0; $i < $limit; ++$i) {
+	my $c = substr($reval, $i, 1);
+
+	# sorry. this does not work ... 
+	#	if (ord($c) > 127) {
+	#	    $revalf .= '$' . sprintf("02X", ord($c));
+	# 	} elsif($c eq '$') {
+	if($c eq '$') {
+	    $revalf .= "\\\$" ;
+	} else {
+	    $revalf .= $c;
+	}
+    }
+    
+#    print "regexval:" . $filenode . ":" . $reval . "::\n";
+    
+    my $res = qr{\(83=$revalf\).*\(85=(.*)};
+    
+    while (<$fh>) {
+	my $l = $_;
+	#kill the last parent ... 
+	$l =~ s:\)>[\w]*$::;
+	
+	if ($l =~ m:$res:) {
+	    my $c = $1;
+
+	    # kill optiona parents after ...
+	    $c =~ s:\)\(.*::;
+
+	    if ($c =~ m:^[\d]+$:) {
+		# ups . no new name at all ...
+		next;
+	    }
+	    
+	    # we have it ... if its the dreadful / .. we have to replace it now 
+	    $c =~ s:\/:_2F_:g;
+
+	    # if we have a paret in and it is escaped, we have to get it clean
+	    $c =~ s:\\\):):g;
+	    $c =~ s:\\\(:(:g;
+	    
+	    close $fh;
+
+	    return $c;
+	}
+    }
+    
+    close $fh;
+
+    return $filenode;
+}
 
 sub prefix {
     # we set the prefix
@@ -985,7 +1099,7 @@ sub copyflags {
 }
 
 sub appendflags {
-    # the flags fro the append
+    # the flags for the append
     my $self = shift;
 
     if ($#_ == -1) {
@@ -997,11 +1111,26 @@ sub appendflags {
     return $self->{'appendflags'};
 }
 
+sub verbose {
+    # the flags 
+    my $self = shift;
+
+    if ($#_ == -1) {
+	return $self->{'verbose'};
+    }
+
+    $self->{'verbose'} = shift;
+
+    $MailTransferDirData::verbose = $self->{'verbose'};
+    
+    return $self->{'verbose'};
+}
+
 
 sub filterit {
     my $self = shift ;
 
-    print "WARNING: dont have a filter in place, so we drop anything ...\n";
+    print "WARNING: dont have a filter in place, so we drop anything ...\n" if $self->verbose();
     return 1;
 }
 
@@ -1024,10 +1153,30 @@ sub add_total {
     my $self = shift;
 
     my $size = shift;
+    
     $self->{'total'} += $size;
     
     return $self->{'total'};
     
+}
+
+sub get_convert {
+    # helper : we need the converter in the others ...
+    my $self = shift;
+
+    return '';
+}
+
+sub filterit {
+    # what we dont transfer from vanilla
+    my $self = shift ;
+
+    my $c = shift;
+    
+    my $ret = 0;
+
+    # we let it live
+    return 0;
 }
 
 1;

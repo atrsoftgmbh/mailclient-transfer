@@ -5,6 +5,7 @@ package MailTransferDirListSeamonkey;
 # part of the MailTransfer script system
 #
 # do it the seamonkey way
+$version = '1.0.0';
 
 # we are a list after all ...
 use parent 'MailTransferDirList';
@@ -34,111 +35,19 @@ sub add_directory {
 
     my $subdir = '';
     
-    if ($path[$#path] eq 'new') {
-	# we have a new subdirectory at last ...
-	$subdir = pop @path;
-    } elsif ($path[$#path] eq 'cur') {
-	# we have a cur subdirectory at last ...
-	$subdir = pop @path;
-    } elsif ($path[$#path] eq 'tmp') {
-	# we have a tmp subdirectory at last ...
-	$subdir = pop @path;
-    }
     
     my ($basename,$normpath) = $self->get_normalized_path(@path);
     
     $self->SUPER::add_directory($directory, $basename, $normpath, $subdir);
 }
 
-sub get_from_msf_foldername {
-    # warning : this work not perfect. only a limited thing is working..
-    my $msf = shift;
-    my $filenode = shift;
-
-    my $fh ;
-
-    if (!open($fh, $msf)) {
-	# fallback, not nice but works ..
-	return $filenode;
-    }
-
-    my $reval = $filenode;
-
-    $reval =~ s:\\:\\\\:g;
-    $reval =~ s:\):\\):g;
-    $reval =~ s:\(:\\(:g;
-    $reval =~ s:\[:\\[:g;
-    $reval =~ s:\]:\\]:g;
-    $reval =~ s:\*:\\*:g;
-    $reval =~ s:\+:\\+:g;
-    $reval =~ s:\-:\\-:g;
-    $reval =~ s:\<:\\<:g;
-    $reval =~ s:\>:\\>:g;
-    $reval =~ s:\{:\\{:g;
-    $reval =~ s:\}:\\}:g;
-    $reval =~ s:\?:\\?:g;
-
-    my $i ;
-    my $limit = length $reval;
-
-    my $revalf = '';
-    for ($i = 0; $i < $limit; ++$i) {
-	my $c = substr($reval, $i, 1);
-
-	# sorry. this does not work ... 
-	#	if (ord($c) > 127) {
-	#	    $revalf .= '$' . sprintf("02X", ord($c));
-	# 	} elsif($c eq '$') {
-	if($c eq '$') {
-	    $revalf .= "\\\$" ;
-	} else {
-	    $revalf .= $c;
-	}
-    }
-    
-#    print "regexval:" . $filenode . ":" . $reval . "::\n";
-    
-    my $res = qr{\(83=$revalf\).*\(85=(.*)};
-    
-    while (<$fh>) {
-	my $l = $_;
-	#kill the last parent ... 
-	$l =~ s:\)>[\w]*$::;
-	
-	if ($l =~ m:$res:) {
-	    my $c = $1;
-
-	    # kill optiona parents after ...
-	    $c =~ s:\)\(.*::;
-
-	    if ($c =~ m:^[\d]+$:) {
-		# ups . no new name at all ...
-		next;
-	    }
-	    
-	    # we have it ... if its the dreadful / .. we have to replace it now 
-	    $c =~ s:\/:_2F_:g;
-
-	    # if we have a paret in and it is escaped, we have to get it clean
-	    $c =~ s:\\\):):g;
-	    $c =~ s:\\\(:(:g;
-	    
-	    close $fh;
-
-	    return $c;
-	}
-    }
-    
-    close $fh;
-
-    return $filenode;
-}
 
 sub get_normalized_path {
+    # we have a real path and make the normalized thing here
     my $self = shift ;
     
-    my $ret = '';
-    my $b = '';
+    my $path = '';
+    my $basepart = '';
 
     my $dirs = $self->{'sourcefile'};
     
@@ -152,17 +61,17 @@ sub get_normalized_path {
 	$dirs .= '/' . $d;
 
 	if ( -r $msf ) {
-	    $nd = &get_from_msf_foldername($msf, $nd);
+	    $nd = $self->get_from_msf_foldername($msf, $nd);
 	} else {
 	    # no new name in here ...
 	}
 	
-	$b = $nd;
+	$basepart = $nd;
 	
-	$ret .= '/' . $nd;
+	$path .= '/' . $nd;
     }
 
-    return ($b,$ret);
+    return ($basepart,$path);
 }
 
 sub gen {
@@ -244,7 +153,15 @@ sub convert_folder_names_seamonkey {
     return \%e;
 }
 
+sub get_convert {
+    # helper : we need the converter in the others ...
+    my $self = shift;
+
+    return \&convert_folder_names_seamonkey;
+}
+
 sub filterit {
+    # we filter that directries out 
     my $self = shift ;
 
     my $c = shift;

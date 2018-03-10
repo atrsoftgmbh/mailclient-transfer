@@ -4,6 +4,12 @@ package MailTransferDirData;
 # atrsoftgmbh 2018
 # part of the MailTransfer script system
 #
+
+$verbose = 1;
+
+
+$version = '1.0.0';
+
 # we have here the basic data structure for holding a
 # folder and ist data in ...
 # here is also the heart of doings ...
@@ -37,6 +43,8 @@ sub initialize {
     $self->{'subdir'} = $subdir;
 
     $self->{'total'} = 0;
+    
+    $self->{'verbose'} = $verbose;
     
     if ($#_ == 3) {
 
@@ -78,7 +86,7 @@ sub initialize {
 	
 	# the others .... real directories ... 
 	if (!opendir($dir, $directory)) {
-	    print "ERROR101: cannot open directory $directory ... \n";
+	    print "ERROR101: cannot open directory $directory ... \n"  if $self->{'verbose'};
 	} else { 
 
 	    @files = readdir($dir);
@@ -151,9 +159,9 @@ sub initialize {
 
 	++ $filenumbermailbox;
 	
-	print "found $filenumber regular files in $directory .... \n" ;
+	print "found $filenumber regular files in $directory .... \n"  if $self->{'verbose'};
 
-	print "found $filenumbermailbox mailbox files in $directory .... \n" ;
+	print "found $filenumbermailbox mailbox files in $directory .... \n"  if $self->{'verbose'};
 
 	$self->{'filenumber'} = $filenumber ;
 	
@@ -208,7 +216,7 @@ sub initialize {
 	$self->{'filenumbermailbox'} = $filenumbermailbox ;
 	
     } else {
-	print "ERROR102: in intialize ... wrong number parameters $#_ ...\n";
+	print "ERROR102: in intialize ... wrong number parameters $#_ ...\n" if $self->{'verbose'};
 	return ;
     }
 
@@ -260,26 +268,26 @@ sub save {
     $ret = print $fh "#\n";
 
     if (!$ret) {
-	print "ERROR103: cannot print to scan output.\n";
+	print "ERROR103: cannot print to scan output.\n" if $self->{'verbose'};
 	return 1;
     }
     
     $ret = print $fh "BASENAME:" . $self->{'basename'} . "\n";
     if (!$ret) {
-	print "ERROR104: cannot print to scan output.\n";
+	print "ERROR104: cannot print to scan output.\n" if $self->{'verbose'};
 	return 1;
     }
     
     $ret = print $fh "NORMPATH:" . $self->{'normpath'} . "\n";
     if (!$ret) {
-	print "ERROR105: cannot print to scan output.\n";
+	print "ERROR105: cannot print to scan output.\n" if $self->{'verbose'};
 	return 1;
     }
 
     
     $ret = print $fh "SOURCEPATH:" . $self->{'sourcepath'} . "\n";
     if (!$ret) {
-	print "ERROR106: cannot print to scan output.\n";
+	print "ERROR106: cannot print to scan output.\n" if $self->{'verbose'};
 	return 1;
     }
     
@@ -287,7 +295,7 @@ sub save {
     if ($self->{'subdir'} ne '') {
 	$ret = print $fh "SUBDIR:" . $self->{'subdir'} . "\n";
 	if (!$ret) {
-	    print "ERROR107: cannot print to scan output.\n";
+	    print "ERROR107: cannot print to scan output.\n" if $self->{'verbose'};
 	    return 1;
 	}
     
@@ -298,20 +306,20 @@ sub save {
 	my $f = $1;
 	$ret = print $fh "FILES:0:1\n";
 	if (!$ret) {
-	    print "ERROR108: cannot print to scan output.\n";
+	    print "ERROR108: cannot print to scan output.\n" if $self->{'verbose'};
 	    return 1;
 	}
     
 	$ret = print $fh 'FILEMAILBOX:' . $f . "\n";
 	if (!$ret) {
-	    print "ERROR109: cannot print to scan output.\n";
+	    print "ERROR109: cannot print to scan output.\n" if $self->{'verbose'};
 	    return 1;
 	}
     
     } else {
 	$ret = print $fh "FILES:" . $self->{'filenumber'} . ':' . $self->{'filenumbermailbox'} . "\n";
 	if (!$ret) {
-	    print "ERROR110: cannot print to scan output.\n";
+	    print "ERROR110: cannot print to scan output.\n" if $self->{'verbose'};
 	    return 1;
 	}
     
@@ -319,14 +327,14 @@ sub save {
 	    foreach my $f (@{$self->{'myfiles'}}) {
 		$ret = print $fh 'FILE:' . $f . "\n";
 		if (!$ret) {
-		    print "ERROR111: cannot print to scan output.\n";
+		    print "ERROR111: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 
 		if ($f =~ m:\.index:) {
 		    $ret = print $fh "HINT:index file , no transfer done.\n";
 		    if (!$ret) {
-			print "ERROR112: cannot print to scan output.\n";
+			print "ERROR112: cannot print to scan output.\n" if $self->{'verbose'};
 			return 1;
 		    }
 		}
@@ -336,7 +344,7 @@ sub save {
     
     $ret = print $fh "ENDBASENAME:" . $self->{'basename'} . "\n";
     if (!$ret) {
-	print "ERROR113: cannot print to scan output.\n";
+	print "ERROR113: cannot print to scan output.\n" if $self->{'verbose'};
 	return 1;
     }
 
@@ -348,38 +356,38 @@ sub save {
 	    foreach my $f (@{$self->{'myfilesmailbox'}}) {
 		$ret = print $fh "#\n";
 		if (!$ret) {
-		    print "ERROR114: cannot print to scan output.\n";
+		    print "ERROR114: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		
 		$ret = print $fh "BASENAME:" . $f . "\n";
 		if (!$ret) {
-		    print "ERROR115: cannot print to scan output.\n";
+		    print "ERROR115: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		$ret = print $fh "NORMPATH:" . $self->{'normpath'} . '/'  . $f . "\n";
 		if (!$ret) {
-		    print "ERROR116: cannot print to scan output.\n";
+		    print "ERROR116: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		$ret = print $fh "SOURCEPATH:" . $self->{'sourcepath'} . '/' . $f . "\n";
 		if (!$ret) {
-		    print "ERROR117: cannot print to scan output.\n";
+		    print "ERROR117: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		$ret = print $fh "FILES:0:1\n";
 		if (!$ret) {
-		    print "ERROR118: cannot print to scan output.\n";
+		    print "ERROR118: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		$ret = print $fh 'FILEMAILBOX:' . $f . "\n";
 		if (!$ret) {
-		    print "ERROR119: cannot print to scan output.\n";
+		    print "ERROR119: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		$ret = print $fh "ENDBASENAME:" . $f . "\n";
 		if (!$ret) {
-		    print "ERROR120: cannot print to scan output.\n";
+		    print "ERROR120: cannot print to scan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 	    }
@@ -403,28 +411,28 @@ sub gen_traget_structure {
     
     $ret = print $fh "#\n";
     if (!$ret) {
-	print "ERROR121: cannot print to plan output.\n";
+	print "ERROR121: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "BASENAME:" . $self->{'basename'} . "\n";
     if (!$ret) {
-	print "ERROR122: cannot print to plan output.\n";
+	print "ERROR122: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "NORMPATH:" . $self->{'normpath'} . "\n";
     if (!$ret) {
-	print "ERROR123: cannot print to plan output.\n";
+	print "ERROR123: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "SOURCEPATH:" . $self->{'sourcepath'} . "\n";
     if (!$ret) {
-	print "ERROR124: cannot print to plan output.\n";
+	print "ERROR124: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     if ($self->{'subdir'} ne '') {
 	$ret = print $fh "SUBDIR:" . $self->{'subdir'} . "\n";
 	if (!$ret) {
-	    print "ERROR125: cannot print to plan output.\n";
+	    print "ERROR125: cannot print to plan output.\n" if $self->{'verbose'};
 	    return 1;
 	}
     }
@@ -436,33 +444,33 @@ sub gen_traget_structure {
 
     $ret = print $fh "TARGETMETA:" . $cbdata->{meta} . "\n";
     if (!$ret) {
-	print "ERROR126: cannot print to plan output.\n";
+	print "ERROR126: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "TARGETBASE:" . $cbdata->{base} . "\n";
     if (!$ret) {
-	print "ERROR127: cannot print to plan output.\n";
+	print "ERROR127: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "TARGETDATACUR:" . $cbdata->{cur} . "\n";
     if (!$ret) {
-	print "ERROR128: cannot print to plan output.\n";
+	print "ERROR128: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "TARGETDATANEW:" . $cbdata->{new} . "\n";
     if (!$ret) {
-	print "ERROR129: cannot print to plan output.\n";
+	print "ERROR129: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     $ret = print $fh "TARGETDATATMP:" . $cbdata->{tmp} . "\n";
     if (!$ret) {
-	print "ERROR130: cannot print to plan output.\n";
+	print "ERROR130: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
     
     $ret = print $fh "FILES:" . $self->{'filenumber'} . ':' . $self->{'filenumbermailbox'} . "\n";
     if (!$ret) {
-	print "ERROR131: cannot print to plan output.\n";
+	print "ERROR131: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
 
@@ -470,28 +478,28 @@ sub gen_traget_structure {
 	foreach my $f (@{$self->{'myfiles'}}) {
 	    $ret = print $fh 'READFILE:' . $f . "\n";
 	    if (!$ret) {
-		print "ERROR132: cannot print to plan output.\n";
+		print "ERROR132: cannot print to plan output.\n" if $self->{'verbose'};
 		return 1;
 	    }
 
 	    if ($f =~ m:\.index:) {
 		$ret = print $fh "HINT:index file , no transfer done.\n";
 		if (!$ret) {
-		    print "ERROR133: cannot print to plan output.\n";
+		    print "ERROR133: cannot print to plan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 	    } else {
 		if ($cbdata->{meta} eq '') {
 		    $ret = print $fh 'WRITEFILE:' . $f . "\n";
 		    if (!$ret) {
-			print "ERROR134: cannot print to plan output.\n";
+			print "ERROR134: cannot print to plan output.\n" if $self->{'verbose'};
 			return 1;
 		    }
 		} else {
 		    # we have thunderbird or seamonkey in ...
 		    $ret = print $fh 'APPENDFILE:' . $cbdata->{meta} . "\n";
 		    if (!$ret) {
-			print "ERROR135: cannot print to plan output.\n";
+			print "ERROR135: cannot print to plan output.\n" if $self->{'verbose'};
 			return 1;
 		    }
 		}
@@ -509,7 +517,7 @@ sub gen_traget_structure {
 	    } else {
 		$ret = print $fh 'SPLITFILE:' . $f . "\n";
 		if (!$ret) {
-		    print "ERROR136: cannot print to plan output.\n";
+		    print "ERROR136: cannot print to plan output.\n" if $self->{'verbose'};
 		    return 1;
 		}
 	    }
@@ -518,7 +526,7 @@ sub gen_traget_structure {
     
     $ret = print $fh "ENDBASENAME:" . $self->{'basename'} . "\n";
     if (!$ret) {
-	print "ERROR137: cannot print to plan output.\n";
+	print "ERROR137: cannot print to plan output.\n" if $self->{'verbose'};
 	return 1;
     }
 
@@ -547,7 +555,7 @@ sub create_folders {
     if (! -d $td) {
 	$ret = print $ofh "create folder " . $td . "\n" ;
 	if (!$ret) {
-	    print "ERROR138: cannot create folder output.\n";
+	    print "ERROR138: cannot create folder output.\n" if $self->{'verbose'};
 	    return 1;
 	}
 
@@ -587,19 +595,19 @@ sub create_folders {
 
     my $tcur = $t . '/' . $self->{'targetdatacur'} ;
     
-    if (&create_subdir($tcur,$ofh)) {
+    if ($self->create_subdir($tcur,$ofh)) {
 	return 1;
     }
 
     my $tnew = $t . '/' . $self->{'targetdatanew'} ;
 
-    if (&create_subdir($tnew,$ofh)) {
+    if ($self->create_subdir($tnew,$ofh)) {
 	return 1;
     }
     
     my $ttmp = $t . '/' . $self->{'targetdatatmp'} ;
     
-    if (&create_subdir($ttmp,$ofh)) {
+    if ($self->create_subdir($ttmp,$ofh)) {
 	return 1;
     }
 
@@ -607,7 +615,9 @@ sub create_folders {
 }
 
 sub create_subdir {
-    # helper 
+    # helper
+    my $self = shift ;
+    
     my $tcur = shift ;
 
     my $ofh = shift ;
@@ -646,7 +656,7 @@ sub copy_files {
 
     my $limit = $#{$self->{'myfiles'}};
    
-    print "$self->{'sourcepath'}\n";
+    print "$self->{'sourcepath'}\n" if $self->{'verbose'};
     
     for ($i = 0; $i <= $limit; ++$i) {
 
@@ -659,20 +669,20 @@ sub copy_files {
 	    # we have the thing in.. now simulate...
 	    if ( -r $source) {
 		# ok. we have one in...
-		my $newnumber = &get_last_number( $tcur );
+		my $newnumber = $self->get_last_number( $tcur );
 
 		my $target = $tcur . '/' . $newnumber;
 		
 		$ret = print $ofh "copy " . $source . " to " . $target .  "\n" ;
 		if (!$ret) {
-		    print "ERROR176: cannot write copy files log.\n";
+		    print "ERROR176: cannot write copy files log.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		# print "$sf $tf\n";
 		# file module
 		#		$ret = copy ($source, $target);
 
-		$ret = &catit($ofh, $source,$target);
+		$ret = $self->catit($ofh, $source,$target);
 		    
 		if ($ret != 0) {
 		    my $err = $!;
@@ -684,20 +694,20 @@ sub copy_files {
 	    # we have the thing in.. now simulate...
 	    if ( -r $source) {
 		# ok. we have one in...
-		my $newnumber = &get_last_number( $tcur );
+		my $newnumber = $self->get_last_number( $tcur );
 
 		my $target = $tcur . '/' . $newnumber;
 		
 		$ret = print $ofh "copy " . $source . " to " . $target .  "\n" ;
 		if (!$ret) {
-		    print "ERROR178: cannot write copy files log.\n";
+		    print "ERROR178: cannot write copy files log.\n" if $self->{'verbose'};
 		    return 1;
 		}
 		# print "$sf $tf\n";
 		# file module
 		#		$ret = copy ($source, $target);
 
-		$ret = &catit($ofh, $source,$target);
+		$ret = $self->catit($ofh, $source,$target);
 		    
 		if ($ret != 0) {
 		    my $err = $!;
@@ -713,14 +723,14 @@ sub copy_files {
 		if ( -r $source) {
 		    $ret = print $ofh "copy " . $source . " to " . $target .  "\n" ;
 		    if (!$ret) {
-			print "ERROR142: cannot write copy files log.\n";
+			print "ERROR142: cannot write copy files log.\n" if $self->{'verbose'};
 			return 1;
 		    }
 		    # print "$sf $tf\n";
 		    # file module
 		    #		$ret = copy ($source, $target);
 
-		    $ret = &catit($ofh, $source,$target);
+		    $ret = $self->catit($ofh, $source,$target);
 		    
 		    if ($ret != 0) {
 			my $err = $!;
@@ -743,15 +753,15 @@ sub copy_files {
 	if ( -r $source && -f $source ) {
 	    $ret = print $ofh "split " . $source . " to " . $target .  "\n" ;
  	    if (!$ret) {
-		print "ERROR144: cannot write copy files log.\n";
+		print "ERROR144: cannot write copy files log.\n" if $self->{'verbose'};
 		return 1;
 	    }
 
 	    if (-s $source) {
-		$ret = &splitit($ofh, $source, $target, $flags);
+		$ret = $self->splitit($ofh, $source, $target, $flags);
 	    }
 	} else {
-	    print $ofh "ERROR145: not found source for split $source ..\n";
+	    print $ofh "ERROR145: not found source for split $source ..\n" if $self->{'verbose'};
 	    return 1;
 	}
     }
@@ -763,6 +773,9 @@ sub copy_files {
 sub catit {
     # helper : cat a file into a source
     # we add if needed the From line in front of it ...
+
+    my $self = shift;
+    
     my $logfh = shift ;
 
     my $source = shift;
@@ -775,7 +788,7 @@ sub catit {
 	# hm. we dont have to do anything now ..
 	$ret = print $logfh "Empty file ...\n";
 	if (!$ret) {
-	    print "ERROR146: cannot write to catit log.\n";
+	    print "ERROR146: cannot write to catit log.\n" if $self->{'verbose'};
 	    return 1;
 	}
  
@@ -814,7 +827,7 @@ sub catit {
     if ($firstline =~ m:^[\s]*$:) {
 	$ret = print $logfh "EMPTY file ..\n";
 	if (!$ret) {
-	    print "ERROR150: cannot write to catit log.\n";
+	    print "ERROR150: cannot write to catit log.\n" if $self->{'verbose'};
 	    return 1;
 	}
 	close $fh, $sfh;
@@ -856,7 +869,7 @@ sub catit {
 
     close $fh, $sfh;
 
-    print $logfh "catit writed $lines lines .\n";
+    print $logfh "catit writed $lines lines .\n" if $self->{'verbose'};
     
     return 0;
 }
@@ -883,7 +896,7 @@ sub append_files {
 
     my $limit = $#{$self->{'myfiles'}};
    
-    print "$self->{'sourcepath'}\n";
+    print "$self->{'sourcepath'}\n" if $self->{'verbose'};
     
     for ($i = 0; $i <= $limit; ++$i) {
 
@@ -897,11 +910,11 @@ sub append_files {
 	if ( -r $source) {
 	    $ret = print $ofh "append " . $source . " to " . $target .  "\n" ;
 	    if (!$ret) {
-		print "ERROR154: cannot write to append output.\n";
+		print "ERROR154: cannot write to append output.\n" if $self->{'verbose'};
 		return 1;
 	    }
 
-	    $ret = &catit($ofh, $source, $target);
+	    $ret = $self->catit($ofh, $source, $target);
 	    if ($ret != 0) {
 		print $ofh "ERROR172: cannot write to append output.\n";
 		return 1;
@@ -922,13 +935,13 @@ sub append_files {
 	if ( -r $source) {
 	    $ret = print $ofh "append " . $source . " to " . $target .  "\n" ;
 	    if (!$ret) {
-		print "ERROR155: cannot write to append output.\n";
+		print "ERROR155: cannot write to append output.\n" if $self->{'verbose'};
 		return 1;
 	    }
 
 	    # in case we do spiltit to a file its in fact a cat ...
 	    # its also ok for seamonkey here 
-	    $ret = &splitit($ofh, $source, $target, 'thunderbird_seamonkey_mutt');
+	    $ret = $self->splitit($ofh, $source, $target, 'thunderbird_seamonkey_mutt');
 
 	    if ($ret != 0) {
 		print $ofh "ERROR173: cannot splitit $source ... \n";
@@ -966,12 +979,12 @@ sub split_files {
     if ( -r $source && -f $source ) {
 	$ret = print $ofh "split " . $source . " to " . $target .  "\n" ;
 	if (!$ret) {
-	    print "ERROR157: cannot write to split output.\n";
+	    print "ERROR157: cannot write to split output.\n" if $self->{'verbose'};
 	    return 1;
 	}
 
 	if (-s $source) {
-	    $ret = &splitit($ofh, $source, $target, $flags);
+	    $ret = $self->splitit($ofh, $source, $target, $flags);
 	    if ($ret != 0) {
 		print $ofh "ERROR174: cannot splitit $source.\n";
 		return 1;
@@ -1001,11 +1014,11 @@ sub thunder_to_thunder_files {
     
     $ret = print $ofh "copycat " . $source . " to " . $target .  "\n" ;
     if (!$ret) {
-	print "ERROR158: cannot write to copycat output.\n";
+	print "ERROR158: cannot write to copycat output.\n" if $self->{'verbose'};
 	return 1;
     }
 
-    $ret = &catit($ofh, $source, $target);
+    $ret = $self->catit($ofh, $source, $target);
     
     return $ret;
 }
@@ -1015,6 +1028,8 @@ sub splitit {
     # this is for one file ...
     # if target is a dir we create new files.(kmail, evolution ,...)
     # if target is a file we append one by one to that file (thunderbird , seamonkey)
+
+    my $self = shift ;
     
     my $logfh = shift ;
 
@@ -1075,7 +1090,7 @@ sub splitit {
 
 	    $seenfrom = 0;
 
-	    $ret = &writefile($target, $num, \@f, $logfh, $flags);
+	    $ret = $self->writefile($target, $num, \@f, $logfh, $flags);
 
 	    if ($ret != 0) {
 		return 1;
@@ -1097,7 +1112,7 @@ sub splitit {
 		    # yes. we have a end of mail ...
 		    $seenfrom = 0;
 
-		    $ret = &writefile($target, $num, \@f, $logfh, $flags);
+		    $ret = $self->writefile($target, $num, \@f, $logfh, $flags);
 
 		    if ($ret != 0) {
 			return 1;
@@ -1116,7 +1131,7 @@ sub splitit {
 
     # now for the rest ...
     if ($#f > -1) {
-	$ret = &writefile($target, $num, \@f, $logfh, $flags);
+	$ret = $self->writefile($target, $num, \@f, $logfh, $flags);
 	++ $num;
 	if ($ret != 0) {
 	    return 1;
@@ -1168,6 +1183,8 @@ sub onlyheader {
 
 sub writefile {
     # helper. we have a synthetic file to create
+    my $self = shift;
+    
     # mail is in the array per ref, log is in fh ..
     my $targetdir = shift;
 
@@ -1178,6 +1195,7 @@ sub writefile {
     my $log = shift ;
 
     my $flags = shift ; # if we have a slypheed in ...
+    
     my $ret = 0;
 
     my $fh;
@@ -1189,14 +1207,14 @@ sub writefile {
 	    my $targetfile = $targetdir . '/' . $num;
 
 	    if (!open ($fh, '>' . $targetfile)) {
-		print $log "ERROR174: writefile  mailfile $targetfile ...\n";
+		print $log "ERROR174: writefile  mailfile $targetfile .. $num ...\n";
 		return 1;
 	    }
 	} elsif ($flags eq 'claws-mail') {
 	    my $targetfile = $targetdir . '/' . $num;
 
 	    if (!open ($fh, '>' . $targetfile)) {
-		print $log "ERROR180: writefile  mailfile $targetfile ...\n";
+		print $log "ERROR180: writefile  mailfile $targetfile .. $num ...\n";
 		return 1;
 	    }
 	} else {
@@ -1205,7 +1223,7 @@ sub writefile {
 	    my $targetfile = $targetdir . '/mail' . $numfilled . '.file';
 
 	    if (!open ($fh, '>' . $targetfile)) {
-		print $log "ERROR160: writefile  mailfile $targetfile ...\n";
+		print $log "ERROR160: writefile  mailfile $targetfile .. $num ...\n";
 		return 1;
 	    }
 	}
@@ -1215,7 +1233,7 @@ sub writefile {
 
 	$ret = print $log "append to file $targetfile ...\n";
 	if (!$ret) {
-	    print "ERROR161: cannot write to splitit output.\n";
+	    print "ERROR161: cannot write to splitit .. $num output.\n" if $self->{'verbose'};
 	    return 1;
 	}
 
@@ -1224,7 +1242,7 @@ sub writefile {
 	}
 
 	if (!open ($fh, '>>' . $targetfile)) {
-	    print $log "ERROR162: writefile appendfile $targetfile ...\n";
+	    print $log "ERROR162: writefile appendfile $targetfile .. $num ...\n";
 	    return 1;
 	}
     }
@@ -1236,7 +1254,7 @@ sub writefile {
 	$ret = print $fh $p . $fromline;
 	++ $lines;
 	if (!$ret) {
-	    print $log "ERROR163: cannot write in writefile line $lines.\n";
+	    print $log "ERROR163: cannot write in writefile line $lines .. $num .\n";
 	    return 1;
 	}
     }
@@ -1249,7 +1267,7 @@ sub writefile {
 	$lastl = $l;
 	$ret = print $fh $l;
 	if (!$ret) {
-	    print $log "ERROR164: cannot write in writefile line $lines.\n";
+	    print $log "ERROR164: cannot write in writefile line $lines .. $num .\n";
 	    return 1;
 	}
     }
@@ -1257,14 +1275,14 @@ sub writefile {
     if ($lastl =~ m:.:) {
 	$ret = print $fh "\n"; # need an empty line in at last ...
 	if (!$ret) {
-	    print $log "ERROR165: cannot write in writefile.\n";
+	    print $log "ERROR165: cannot write in writefile .. $num .\n";
 	    return 1;
 	}
     }
 
     close $fh;
 
-    print $log "writefile did $lines lines.\n";
+    print $log "writefile did $lines lines .. $num .\n";
 
     return 0;
 }
@@ -1352,6 +1370,8 @@ sub is_a_mbox_file {
 }
 
 sub get_last_number {
+    my $self = shift ;
+    
     my $t = shift;
 
     my $dh;
@@ -1366,13 +1386,24 @@ sub get_last_number {
     closedir($dh);
 
     my $n = 1;
-    
-    foreach my $f (@files) {
-	if ($f =~ m:^([\d]+)$:) {
-	    my $v = $1;
-
-	    if ($n <= $v + 0) {
-		$n = $v + 1;
+    if ($self->{'subdir'} eq 'sylpheed' || $self->{'subdir'} eq 'claws-mail' ) {
+	foreach my $f (@files) {
+	    if ($f =~ m:^([\d]+)$:) {
+		my $v = $1;
+		
+		if ($n <= $v + 0) {
+		    $n = $v + 1;
+		}
+	    }
+	}
+    } else  {
+	foreach my $f (@files) {
+	    if ($f =~ m:^mail([\d]+)\.file$:) {
+		my $v = $1;
+		
+		if ($n <= $v + 0) {
+		    $n = $v + 1;
+		}
 	    }
 	}
     }

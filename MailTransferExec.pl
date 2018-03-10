@@ -9,13 +9,16 @@
 # we use the plan output folder names.
 
 # we echo all info. then we ask for the final go / nogo
+$verbose = 1;
 
 # our data structures ...
+$version = '1.0.0';
 
 BEGIN {
     push @INC, ".";
 }
 
+# our datastructures 
 use MailTransferDirListVanilla;
 
 use MailTransferDirListClaws;
@@ -36,6 +39,12 @@ use MailTransferDirListThunderbird;
 
 
 # check parameters
+
+$verbose = 1;
+if ($ARGV[0] eq '-y') {
+    $verbose = 0;
+    shift;
+}
 
 if ($#ARGV < 2 ) {
   &usage ;
@@ -58,7 +67,7 @@ if ($themailsystem eq 'vanilla'
     ) {
     # we have a valid system in now ...
 } else {
-    print "sorry, but mailsystem $themailsystem is not supported.\n";
+    print "ERROR001: sorry, but mailsystem $themailsystem is not supported.\n";
     exit (1);
 }
 
@@ -102,12 +111,12 @@ if ($themailsystem eq 'thunderbird') {
 
 my $ifh;
 
-open($ifh, "$infile") or die "cannot open $infile for read...\n";
+open($ifh, "$infile") or die "ERROR002: cannot open $infile for read...\n";
 
 my $ret = $dirlist->load_plan($ifh);
 
 if ($ret != 0) {
-    print "ERROR004: something went wrong in load plan \n";
+    print "ERROR003: something went wrong in load plan \n";
     exit(1);
 }
 
@@ -117,21 +126,23 @@ if ($ret == 0) {
 
     my $ofh;
     
-    open($ofh, ">$outfile") or die "ERROR005: cannot open $outfile for write log. \n";
+    open($ofh, ">$outfile") or die "ERROR004: cannot open $outfile for write log. \n";
     
-    print "plan loaded. if you want to execute, press any key. \n";
-    print "if you want to abort, press ctrl-C or whatever you need to... \n";
+    if ($verbose) {
+	print "plan loaded. if you want to execute, press any key. \n";
+	print "if you want to abort, press ctrl-C or whatever you need to... \n";
 
-    $inp = <>;
+	$inp = <>;
 
-    if ($inp =~ m:^(N|NO|n|no):) {
-	exit(1);
+	if ($inp =~ m:^(N|NO|n|no):) {
+	    exit(1);
+	}
     }
     
     $ret = $dirlist->execute($ofh);
 
     if($ret != 0) {
-	print "ERROR006: something went wrong in execution of plan...\n";
+	print "ERROR005: something went wrong in execution of plan...\n";
 	exit(1);
     }
 }
@@ -143,7 +154,9 @@ exit ($ret);
 # end of main
 
 sub usage {
-    print 'perl MailTransferExec.pl mailsystem planfile logfile
+    print 'perl MailTransferExec.pl [-y] mailsystem planfile logfile
+
+-y: do it without a question
 
 mailsystem : the target system, one of 
     vanilla

@@ -7,6 +7,7 @@ package MailTransferDirListEvolution;
 # do it the evolution way
 #
 # we have to make the evolution adjustments here
+$version = '1.0.0';
 
 # we are a list after all ...
 use parent 'MailTransferDirList';
@@ -59,16 +60,18 @@ sub add_directory {
 	unshift @path, @ppath;
     }
   
-    my ($basename,$normpath) = &get_normalized_path(@path);
+    my ($basename,$normpath) = $self->get_normalized_path(@path);
     
     $self->SUPER::add_directory($directory, $basename, $normpath, $subdir);
 }
 
 sub get_normalized_path {
-    # evolution has a small mapping for the . problem ...
-    my $ret = '';
+    my $self = shift;
 
-    my $b = '';
+    # evolution has a small mapping for the . problem ...
+    my $path = '';
+
+    my $basedir = '';
 
     foreach my $d (@_) {
 	my $nd = $d;
@@ -77,12 +80,12 @@ sub get_normalized_path {
 
 	$nd =~ s:_2E:.:g;
 
-	$b = $nd;
+	$basedir = $nd;
 	
-	$ret .= '/' . $nd;
+	$path .= '/' . $nd;
     }
 
-    return ($b,$ret);
+    return ($basedir,$path);
 }
 
 sub gen {
@@ -134,6 +137,14 @@ sub convert_folder_names_evolution {
 
     return \%e;
 }
+
+sub get_convert {
+    # helper : we need the converter in the others ...
+    my $self = shift;
+
+    return \&convert_folder_names_evolution;
+}
+
 
 sub filterit {
     # we need to ignore stuff we dont want to transfer ...
