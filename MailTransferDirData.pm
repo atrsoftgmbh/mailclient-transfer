@@ -1,4 +1,8 @@
 
+# we use the mail thing here
+
+use MailTransferMail;
+
 package MailTransferDirData;
 
 # atrsoftgmbh 2018
@@ -20,6 +24,8 @@ $version = '1.0.0';
 # the magic from line if we dont have a front in first line ...
 # we add it fro all new systems then ...
 $fromline = "From root\@localhost   Mon Feb 12 23:26:05 2018 \n";
+
+
 
 sub initialize {
     # we initialize here our little thing.
@@ -1054,85 +1060,16 @@ sub splitit {
     close $fh;
 
     print $logfh "read in a total of " . ($#lines + 1) . " lines.\n";
-    my @f = ();
 
-    my $seenfrom = 0;
+    my $mail_r = &MailTransferDirData::get_all_mails (\@lines,  $logfh);
 
-    while ($lines[0] =~ m:^[\s]*$: && $#lines > -1) {
-	# we kill all empty lines at begin ..
-	shift;
-    }
-    
-    while ($#lines > -1) {
-	my $line = shift @lines;
+    for (my $k = 0; $k <= $#$mail_r; ++$k) {
+	my $f_r = $mail_r->[$k];
 
-	if ($line =~ m/^From: / && $seenfrom == 0) {
-	    $seenfrom = 1;
-	    push @f, $line;
-	    next;
-	}
+	$ret = $self->writefile($target, $num, $f_r, $logfh, $flags);
 
-	if ($line =~ m/^From: / && $seenfrom == 1) {
-	    # ups. we overrun because the From line is missing ..
-	    # to repair we have to scan the @f backward till we hit the first empty line
-	    # this is the end of the former.
-
-	    my $j ;
-	    for ($j = $#f; $j >0;--$j) {
-		my $l = pop @f;
-		if ($l =~ m:[\w\.@]:) {
-		    unshift @lines, $l;
-		} else {
-		    # the line is now an only empty, so mail is consumed back
-		    last;
-		}		
-	    }
-
-	    $seenfrom = 0;
-
-	    $ret = $self->writefile($target, $num, \@f, $logfh, $flags);
-
-	    if ($ret != 0) {
-		return 1;
-	    }
-
-	    ++ $num;
-	    @f = ();
-	    push @f, $line;
-	    next;
-	}
-
-	if (($line =~ m/From / && $seenfrom == 1)
-	    || $line =~ m/Return-path: / && $seenfrom == 1) {
-	    if ($f[$#f] =~ m:^$:) {
-		# ok. we have the empty line in ...
-		# we check now if we can make it to the next From: with only a heder in ...
-		#
-		if (&onlyheader(\@lines)) {
-		    # yes. we have a end of mail ...
-		    $seenfrom = 0;
-
-		    $ret = $self->writefile($target, $num, \@f, $logfh, $flags);
-
-		    if ($ret != 0) {
-			return 1;
-		    }
-
-		    ++ $num;
-		    @f = ();
-		    push @f, $line;
-		    next;
-		} 
-	    }
-	}
-
-	push @f, $line;
-    }
-
-    # now for the rest ...
-    if ($#f > -1) {
-	$ret = $self->writefile($target, $num, \@f, $logfh, $flags);
 	++ $num;
+
 	if ($ret != 0) {
 	    return 1;
 	}
@@ -1143,43 +1080,7 @@ sub splitit {
     return 0;
 }
 
-sub onlyheader {
-    # helper : we have a From: line, but dont know
-    # if its a header... if yes : we know it after ...
-    my $ret = 0;
 
-    my $a_r = shift;
-
-    my $i = 0;
-
-    my $limit = $#{$a_r};
-    
-    while ($i <= $limit) {
-      if ($a_r->[$i] =~ m/[\w\@\:]/
-	  && (
-	      ($a_r->[$i] =~ m/^[\w\-]+:/
-	       && $a_r->[$i] !~ m/^From: / )
-	      || $a_r->[$i] =~ m/^[\s]+/)
-	  ) {
-	  ++$i;
-      } else {
-	  last;
-      }
-    }
-
-    if ($i > $limit) {
-	# no header, only the rest ...
-	return 0;
-    }
-
-    if ($a_r->[$i] =~ m/^From: /) {
-	# next header found, we have a header
-	return 1;
-    }
-
-    # no, we have no header that follows..
-    return 0;
-}
 
 sub writefile {
     # helper. we have a synthetic file to create
@@ -1248,8 +1149,14 @@ sub writefile {
     }
 
     my $lines = 0;
+
+    my $text = $a_r->{text};
+
+    my $start = $a_r->{hstart};
+
+    my $end = $a_r->{bend};
     
-    if ($a_r->[0] !~ m/From /) {
+    if ($text->[$start] !~ m/From /) {
 	# we have an old mail file in, add the magic from line ...
 	$ret = print $fh $p . $fromline;
 	++ $lines;
@@ -1260,25 +1167,18 @@ sub writefile {
     }
 
     $p = '';
-    
-    my $lastl = '';
-    foreach my $l (@{$a_r}) {
-	++$lines;
-	$lastl = $l;
-	$ret = print $fh $l;
-	if (!$ret) {
-	    print $log "ERROR164: cannot write in writefile line $lines .. $num .\n";
-	    return 1;
-	}
+    my $nlines = 0;
+    eval {
+	$nlines = $a_r->write($fh);
+    };
+
+    if ($@) {
+	close $fh;
+	print $log "ERROR164: cannot write in writefile line $lines .. $num \n";
+	return 1;
     }
 
-    if ($lastl =~ m:.:) {
-	$ret = print $fh "\n"; # need an empty line in at last ...
-	if (!$ret) {
-	    print $log "ERROR165: cannot write in writefile .. $num .\n";
-	    return 1;
-	}
-    }
+    $lines += $nlines;
 
     close $fh;
 
@@ -1413,6 +1313,436 @@ sub get_last_number {
     }
     
     return sprintf("%d", $n);
+}
+
+# end of object methods
+# we have now only class methods in
+
+sub get_all_mails {
+    # we get a ref to the text array here in. thats all.
+    my $m_r = shift;
+
+    my $log = shift ;
+    
+    my $k = 0;
+    my $klimit = $#$m_r;
+    my $nlines = 0;
+    my @mails = ();
+
+    my $num = 0;
+    if ($klimit < 3) {
+	# ups. garbage ...
+	return [];
+    }
+    
+    for ($k = 0; $k <= $klimit; $k += $nlines) {
+	my $f_r = &getamail($m_r, $k, $log);
+
+	push @mails, $f_r;
+	
+	$nlines = $f_r->{nl};
+	
+	++ $num;
+    }
+
+    # ok, we have them in.
+    # now we readjust for the body end , its hstart - 1
+
+    if ($#mails > 0 ) {
+	my $f_next_r;
+	
+	for ($k = 0 ; $k < $#mails; ++$k) {
+
+	    my $f_r = $mails[$k];
+
+	    $f_next_r = $mails[$k + 1];
+
+	    if ($f_r->{bend} != $f_next_r->{hstart} - 1) {
+		print $log "RE-ADJUST FOR $k $f_r->{bend} to " . ($f_next_r->{hstart} - 1) . "\n";
+		$f_r->{bend} = $f_next_r->{hstart} - 1;
+	    }
+	}
+
+	# for the last, its till the end of the thing
+	$f_next_r->{bend} = $klimit;
+    } elsif ($#mails == 0) {
+	# only one, so ...
+	$mails[0]->{bend} = $klimit;
+    }
+
+    return \@mails;
+}
+
+sub getamail {
+    my $m_r = shift;
+    my $start = shift;
+
+    my $log = shift;
+    
+
+    my $firststart = $start;
+    
+    my $lasthit = 0;
+
+    while ($lasthit == 0) {
+	my $i ;
+
+	
+	for ($i = $start; $i <= $#{$m_r}; ++$i) {
+	    my $line = $m_r->[$i];
+	    
+	    if ($line !~ m/^[\s]*$/) {
+		last;
+	    }
+	}
+
+	# we are on the first line of the thing
+
+	$m = new MailTransferMail($m_r, $i);
+	
+	# $start = $i; # we readjust
+	
+	# so now we seek to the Content-type after it
+
+	for ( ; $i <= $#{$m_r}; ++$i) {
+	    my $line = $m_r->[$i];
+	    
+	    if ($line =~ m/^content-type:[\s]*[^\s]/i) {
+		$m->{hend} = $i;
+		last;
+	    } 
+	}
+
+	if ($i >= $#{$m_r}) {
+	    # we have done it.
+
+	    $m->{nl} = $i - $firststart;
+
+	    $m->{bstart} = $i;
+	    $m->{bend} = $i;
+
+	    return $m;
+	}
+	
+	# ok. take that info now.
+	my $cline = $m_r->[$i];
+
+	if ($cline =~ m/^content-type:[\s]*text\/([^\s]+)/i) {
+	    # einfach. alles bis zum nächsten header ...
+	    $m->{kind} = 'simpletext';
+	    
+	    my $typ = $1;
+
+	    my $content = $cline;
+
+	    ++$i;
+	    
+	    while ($m_r->[$i] =~ m:^[\s]+[^\s]:) {
+		my $c = $m_r->[$i];
+		$c =~ s:[\s]*$::;
+		$content .= $c;
+		++$i;
+	    }
+	    
+	    
+	    $content =~ m:charset=([^\s]+):;
+
+	    my $coding = $1;
+	    
+	    my %cont = (kind => 'text', typ => $typ, coding => $coding, line => $i, content => $content);
+
+	    push @{$m->{content}}, \%cont;
+	    
+	    my $firstempty = 0;
+	    
+	    for (++$i; $i <= $#{$m_r}; ++$i) {
+
+		my $line = $m_r->[$i];
+
+		if ($firstempty == 0 && $line =~ m:^[\s]*$:) {
+		    $m->{hend} = $i;
+		    $m->{bstart} = $i + 1;
+		    $firstempty = 1;
+		}
+		
+		if ($line =~ m/^return-path:[\s]*[^\s]/i) {
+		    last;
+		}
+	    }
+
+	    if ($i >= $#{$m_r}) {
+		# end hit ...
+		$m->{nl} = $i - $firststart;
+
+		$m->{bend} = $i;
+		return $m;
+
+	    }
+
+	    # we use the failsafe against endless looping in case a malformed mail is in
+	    while( $m_r->[$i] =~ m:[^\s]: 
+		   && $i > $m->{bstart}) {
+		--$i;
+	    }
+
+	    if ($i == $m->{bstart}) {
+		print $log "FAILSAFE HIT IN $i \n";
+		++$i;
+	    }
+
+	    if ($m_r->[$i] =~ m:[^\s]:) {
+		++$i;
+	    }
+	    
+	    $m->{nl} = $i - $firststart;
+
+	    $m->{bend} = $i;
+	    
+	    return $m;
+
+	}
+
+
+	
+	if ($cline =~ m/^content-type:[\s]*multipart\/([^\s]+);/i) {
+	    # ok. wir haben eine multipart, den müssen wir nun part by part...
+
+	    $m->{kind} = 'multipart';
+
+	    my $typ = $1;
+	    my $bound ;
+	    
+	    my $content = $cline;
+
+	    ++$i;
+	    
+	    while ($m_r->[$i] =~ m:^[\s]+[^\s]:) {
+		my $c = $m_r->[$i];
+		$c =~ s:[\s]*$::;
+		$content .= $c;
+		++$i;
+	    }
+	    
+	    # ok we have now the boundary in 
+
+	    if ($content =~ m:boundary="([^"]+)":) {
+		$bound = $1;
+	    } elsif ($content =~ m:boundary=([^;]+);:) { 
+		$bound = $1;
+	    } else {
+		$content =~ m:boundary=([^\s]+):;
+		$bound = $1;
+	    }
+	    
+	    # ok. we have a type - interesting, but for now not needed
+	    # and we have the boundary. this is the thing we really need.
+
+	    $m->{boundary} = $bound;
+	    $m->{mimetyp} = $typ;
+
+	    my %cont = (kind => 'multipart', typ => $typ, line => $i, content => $content);
+
+	    push @{$m->{content}}, \%cont;
+	    
+
+
+	    ++$i;
+
+	    my $c = $m_r->[$i];
+
+	    $c =~ s:^[\s]*::;
+	    $c =~ s:[\s]*$::;
+
+	    my $firstbound = 0;
+
+	    my $endbound  = $bound . '--';
+
+	    while ($i <= $#{$m_r}) {
+
+		if (index($c , $endbound) > -1) {
+		    # we have the end of the thing
+		    my $typ = 'last';
+		    my $coding = 'nothing';
+		    my %cont = (kind => 'last', typ => $typ, coding => $coding, line => $i, content => 'empty');
+		    push @{$m->{content}}, \%cont;
+		    $lasthit = 1;
+		    last;
+		}
+		
+		if (index($c, $bound) > -1) {
+		    if ($firstbound == 0) {
+			$firstbound = 1;
+			$m->{hend} = $i;
+			$m->{bstart} = $i + 1;
+		    }
+		    
+		    ++$i;
+
+		    my $content = $m_r->[$i];
+
+		    $content =~ s:[\s]*$::;
+
+		    ++$i;
+		    
+		    while ($m_r->[$i] =~ m:^[\s]+[^\s]:) {
+			my $c = $m_r->[$i];
+			$c =~ s:[\s]*$::;
+			$content .= $c;
+			++$i;
+		    }
+
+		    if ($content =~ m/^content-type:[\s]*text\/([^\s]+)/i) {
+			my $typ = $1;
+
+			$content =~ m:charset=([^\s]+):;
+
+			my $coding = $1;
+			
+			my %cont = (kind => 'text', typ => $typ, coding => $coding, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-type:[\s]*image\/([^\s]+)/i) {
+			my $typ = $1;
+
+			my %cont = (kind => 'image', typ => $typ, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-type:[\s]*multipart\/([^\s]); (.*)/i) {
+			my $typ = $1;
+			my %cont = (kind => 'multipart', typ => $typ, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-transfer-encoding:/i) {
+			my $typ = $1;
+			my %cont = (kind => 'encoding', line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-type:[\s]*application\/([^\s]+);/i) {
+			my $typ = $1;
+
+			
+			my %cont = (kind => 'application', typ => $typ, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-type:[\s]*message\/([^\s]+)/i) {
+			my $typ = $1;
+
+			
+			my %cont = (kind => 'message', typ => $typ, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-language:[\s]*([^\s]+)/i) {
+			my $typ = $1;
+
+			
+			my %cont = (kind => 'language', typ => $typ, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^content-disposition:[\s]*([^\s]+)/i) {
+			my $typ = $1;
+
+			
+			my %cont = (kind => 'disposition', typ => $typ, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+
+		    } elsif ($content =~ m/^[\s]*$/i) {
+			# no need for that
+		    } elsif ($content =~ m/boundary=/i) {
+			# no need for that
+		    } elsif ($content =~ m/^List-/i) {
+			# no need for that
+		    } elsif ($content =~ m/^To:/i) {
+			# no need for that
+		    } elsif ($content =~ m/^MIME-Version:/i) {
+			# no need for that
+		    } elsif ($content =~ m/^X-PGP-Key:/i) {
+			# no need for that
+		    } elsif ($content =~ m/^X-eBay-MailTracker:/i) {
+			# 
+		    } elsif ($content =~ m/^Envelope-To:/i) {
+			# no need for that
+		    } elsif ($content =~ m/^Date:/i) {
+			# no need for that
+		    } else {
+			print $log "UNKOWN CONTENT TYPE in $i : $content \n";
+			my $typ = 'unknown';
+			my $coding = 'unknown';
+			my %cont = (kind => 'unknown', typ => $typ, coding => $coding, line => $i, content => $content);
+			push @{$m->{content}}, \%cont;
+		    }
+		    
+		}
+		
+		++$i;
+
+		$c = $m_r->[$i];
+
+		$c =~ s:^[\s]*::;
+		$c =~ s:[\s]*$::;
+	    }
+
+	    if ($lasthit == 0) {
+		# reset the world. we retarget start and skip this bastard...
+		$i = $m->{hend};
+
+		print $log "BOUND NOT CLOSED $i ... reset the world ...\n";
+
+		++ $i;
+
+		$c = $m_r->[$i];
+
+		until ($c =~ m/^return-path:/i) {
+		    ++$i;
+		    $c = $m_r->[$i];
+		}
+
+		while ($m_r->[$i] =~ m:[^\s]:) {
+		    --$i;
+		}
+		
+		$start = $i;
+		
+	    } else {
+		
+		# bingo. we have the last boundary and the line after is empty.
+		++$i;
+
+		# we now skip till the first line having something in or end
+		while ($i < $#{$m_r}
+		       && $m_r->[$i] =~ m:^[\s]*$: ) {
+		    ++$i;
+		}
+		# we have the first line in .. or end.
+
+		if ($i >= $#{$m_r}) {
+		    $m->{nl} = $i - $firststart;
+		    $m->{bend} = $i;
+
+		    return $m;
+		}
+		
+		# we are on the line of the next header.
+		--$i;
+		
+		$m->{nl} = $i - $firststart;
+
+		$m->{bend} = $i;
+
+		return $m;
+	    }
+	}
+
+    }
+
+    print $log "NO CONTENT TYPE FOUND in $i : $cline \n";
+    # however we made it so far ...
+    
+    $m->{nl} = $i - $firststart;
+
+
+    $m->{bstart} = $i;
+    $m->{bend} = $i;
+    return $m;
 }
 
 1;

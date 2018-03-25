@@ -1127,13 +1127,6 @@ sub verbose {
 }
 
 
-sub filterit {
-    my $self = shift ;
-
-    print "WARNING: dont have a filter in place, so we drop anything ...\n" if $self->verbose();
-    return 1;
-}
-
 sub total {
     # we assume 32 bit arithmetik, so we have the size in K as one..
     my $self = shift;
