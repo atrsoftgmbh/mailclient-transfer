@@ -1,0 +1,39 @@
+
+# settings for the MailFilter 
+SETTINGS
+# the mailsystem is ...
+# MAILSYSTEM vanilla
+# MAILSYSTEM evolution
+MAILSYSTEM claws-mail
+# BASEDIRECTORY /home/ar/transfermails/v
+# BASEDIRECTORY /home/ar/.local/share/evolution/mail/local
+BASEDIRECTORY /home/ar/claws-Mail
+
+PREFIX mailfilter
+# the target for SEND it here
+# MAILBOXDIR /var/spool/mail
+# MAILBOXKIND mbox
+# we sent mails via this 
+# SENDMAIL /usr/sbin/sendmail -bm -oi
+# EATINPUT 1
+CODE codetest.pl
+POOL spampool
+
+ENDSETTINGS
+
+RULE 1
+header 
+&::checkfedoralist
+CODE &::printout ($mail_r)
+ENDRULE
+
+########################################################
+# last rule. we sent the thing to ar
+RULE 9999999
+
+ALWAYS
+SEND ar
+STOP
+ENDRULE
+
+# end of rules

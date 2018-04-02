@@ -18,6 +18,7 @@ This contains small chepters with these headings
 - Rules to filter mails you want to see
 - Rules to filter mails you dont want to see
 - Pools
+- Using perl code
 - How to adjust things
 - How to handle errrrrrroorrrs  - ups ...
 - What is that vanilla thing ?
@@ -252,10 +253,10 @@ So i dont support systems that cannot run on my box.
 End of story.
 --------------------------------------------
 
-The systems i support have all a storage for the mails in the filesystem.
-At least today (2018, febuary ..) i can locate the files in question
+The systems I support have all a storage for the mails in the filesystem.
+At least today (2018, febuary ..) I can locate the files in question
 without too much sherlock homes things ... if the boys and girls behind
-the tools change that - i cut the support for them. End of story.
+the tools change that - I cut the support for them. End of story.
 
 You as an user - with exception of mutt users - have a different sight of
 the things. You know folders - lists - already seen, dropped and so on mails
@@ -280,7 +281,7 @@ mail by mail from first to last and use every rule from first to last till it ha
 for a rule that hits the mail (hit means : all conditions are fullfilled to do the
 things in the rule that we want to be done).
 
-At the end its possible to get rid of the amils you have processed.
+At the end its possible to get rid of the mails you have processed.
 
 -------------------------------------------------------------------------------
 
@@ -842,10 +843,7 @@ The filter can be tailored by using perl code that you write.
 The code is read in just before the real filtering starts, so you have the
 rules and  the target mailsystem already in.
 
-This will in a laterversion be used to make callbackcode.
-
-Then i have a & in teh matchers to call the code instead to call a program.
-For now its read in, but no use in matchers ...
+Then i have a & in the matchers to call the code instead to call a program.
 
 Default is
 
@@ -950,7 +948,7 @@ COPY vanilla_path_relative
 SEND targetuser
 SENDMAIL targetuser
 PROC programcommandline
-CODE perfunctioncodeline # not implemented
+CODE perfunctioncodeline 
 
 A match is one of these followed by matchpatterns line by line
 HEADER
@@ -964,15 +962,17 @@ To combine the matches you can use
 AND
 AND NOT
 
-A matchpattern is a perl regular expression or a commandline preceeded by a identificator.
+A matchpattern is a perl regular expression or a commandline preceeded by a
+identificator.
 SPACE for a regular pattern that has to match
 ! for a pattern that has NOT to match
 / for the command
-& for a perlcodeline # not mplementet now
+& for a perlcodeline 
 
-In case of the command it means the thing has to be absolut, and you have to give the full path.
+In case of the command it means the thing has to be absolut, and you have to
+give the full path.
 
-the patterns are perl regular expressions and must compile as "usual" patterns.
+The patterns are perl regular expressions and must compile as "usual" patterns.
 
 I dont support complex things and taging of matches, so dont overdo it ...
 
@@ -1346,10 +1346,10 @@ spammer forgets it by purpuse, so if I get a mail without a To: in the
 header I drop it.
 
 This is the way to express it - the rule drops the mail by COPY to spam
-folder, but only it the hader has not a To: in, if its in the rule
+folder, but only if the header has not a To: in, if its in the rule
 does not hit.
 
-same for
+Same for
 
 NOTBODY
  http://www.xxx.com
@@ -1386,6 +1386,10 @@ If you made an error in the program return a 1 if you want to make no
 error in the filter - the mail will survive that rule, but its better then to
 wreck in the filter and never see it again.
 
+Last thing:
+You can use perl code - there is asimple example in codetest.rule and
+codetest.pl that shows how its used.
+The thingt is up to you and your perl experiance ...
 
 The rest is now to play with this a bit and after you think you have it
 to make your rules.
@@ -1726,6 +1730,153 @@ This is how a pool is used in the filter for reading.
 
 Together with generation of rules its worth the work ...
 
+
+-------------------------------------------------------------------------------
+
+Using perl code
+
+You can use perl code in two spots : the match for a line and the rule
+to do things after a rule is hit.
+
+First to the easy thing.
+
+You want to match with code.
+
+This can do things that the simple one line match cannot do.
+
+Its in the codetest.rule like this:
+
+RULE 1
+header 
+&::checkfedoralist
+...
+ENDRULE
+
+
+We ignore for now the directive ...
+
+So you do it by using instead of space for a regular expression to match or a !
+for one that does not match or a /... command path
+by using a & in the first character.
+
+The rest has to be a method that you can call, and the method has to
+return a 0 if its a hit, a 1 else ....
+
+Here is the called function from the codetest.pl
+
+sub checkfedoralist {
+    my $ret = 0;
+
+    my $c = shift; # the candidate line, speeds up
+
+    my $mail_r = shift ; # the whole mail
+
+    my $s = shift ; # the matcher itself
+
+    my $cnr = shift ; # my code check number to identify the check
+
+    my $lnr = shift; # its line for the candidate
+    
+    my $i = index($c, 'users@lists.fedoraproject.org');
+
+    return 1 if $i == -1; # bad. no good 
+
+    return $ret;
+}
+
+This first looks to be more complicated than a simple match line.
+
+But ....
+
+- it has more control . Can make things with lines before and after ..
+- can be faster - a simple index here is faster as the regular expression
+- can do external things like use of a database or your favorite blacklister
+
+So yes, it has more to do at first, but it is worth the trick if a simple
+regex does not do the thing.
+
+And: It is faster than doing it external with a / command.
+
+Its done by using local creation of the subroutine as a so called closure.
+In theory you have access to all the variables that are in the spot at
+that moment.
+
+In practise I make a call with all relevant variables - its more convenient
+that way and easier to debug the function in isolation ....
+
+So we have in :
+- the candidate line,
+- the whole MailTransferMail reference,
+- the Matcher reference,
+- the number of the code check in the matcher counting from 0,
+- the line number of the candidate for peeking in mail_r ...
+
+That should be enough to make use of it.
+
+Now the second spot: we have a hit but this time dont want to do a sent
+or sentmail or the external process thing. Instead we want to use code
+in perl.
+
+We have here similar to the matcher a thing for the CODE in the rule.
+
+RULE 1
+header 
+&::checkfedoralist
+CODE &::printout ($mail_r)
+ENDRULE
+
+The thing is the
+CODE &::printout ($mail_r)
+here.
+
+It is used in case we have a hit (that can be the usual, not only the match
+by code as in that rule ... )
+
+The thing is again compiled as a closure function and then executed.
+
+We have here an code example that uses the mails_r from the enveloping
+apply function - not the parameter ! -  but that is a more complicated
+thing to debug than the parameter way ...
+
+sub printout {
+
+    my $m = shift;
+
+    for (my $i = $m->{hstart}; $i <= $m->{bend} ; ++$i) {
+	print $m->{text} -> [$i];
+    } 
+}
+
+
+Seem to look like a normal, but the ($mail_r) in the code text makes it
+to compile to a closure with the $mail_r captured in.
+
+In the real world I give the major things as arguments too, so you can
+switch back to simple use and have then in
+- the reference of the MailTransferMail,
+- the rulenumber,
+- the codenumber counted from 0 to know what CODE it is.
+
+So you have it again in perl and its up to you to make something.
+
+So far for the use.
+
+Now for the code - where comes it in ?
+
+You put it in by use of the -i flag and the name for the file to include.
+We need the require her, so dont forget the final 1; ...
+
+The other way is to use the CODE tag in the settings - the name of the
+file follows the CODE - see codetest.rule for that.
+
+If you think it would be nice to use directly perl in here ...
+
+Yes, but its totally up to you then to debug it.
+I will not accept such thing.
+
+Having a function makes it at least possible to do it in a vanilla helper.
+
+You can use both.
 
 -------------------------------------------------------------------------------
 

@@ -26,6 +26,8 @@ sub initialize {
 
     my $command = shift;
 
+    my $code = shift;
+
     $self->{type} = $type;
     
     $self->{and} = 0;
@@ -37,6 +39,8 @@ sub initialize {
     $self->{notmatcher} = [];
     
     $self->{command} = [];
+
+    $self->{code} = [];
 
     foreach my $reg (@{$matchreg}) {
 	eval {
@@ -63,6 +67,10 @@ sub initialize {
     foreach my $comm (@{$command}) {
 	push @{$self->{command}}, $comm;
     }
+
+    foreach my $co (@{$code}) {
+	push @{$self->{code}}, $co;
+    }
     return ;
 }
 
@@ -86,9 +94,10 @@ sub apply {
 
     my $c = shift;
 
-    my $t = shift ;
-    
+    my $mail_r = shift;
 
+    my $lnr = shift;
+    
     foreach my $m (@{$self->{matcher}}) {
 	if ($c =~ /$m/) {
 	    # nothing
@@ -107,6 +116,27 @@ sub apply {
 	}
     }
 
+    my $cnr = 0;
+    foreach my $code (@{$self->{code}}) {
+	
+	my $codeline = 'sub { ' . $code . '};' ;
+
+	my $cret = 0;
+	
+	eval {
+	    my $co = eval $codeline;
+
+	    $cret = &$co($c, $mail_r, $self, $cnr, $lnr);
+	};
+
+	if ($cret == 1) {
+	    return 1; # bad thing. code didnt accept it
+	}
+
+	# on to the next ...
+	++ $cnr;
+    }
+    
     foreach my $m (@{$self->{command}}) {
 	if (! -x $m) {
 	    print "WARNING : $m not executable for me ... ignore it \n";
@@ -125,8 +155,8 @@ sub apply {
 	    } else {
 		my $mail = '';
 
-		foreach my $l (@{$a_r}) {
-		    $mail .= $l ;
+		for (my $i = $mail_r->{hstart} ; $i <= $mail_r->{bend}; ++$i) {
+		    $mail .= $mail_r->{text}->[$i] ;
 		}
 
 		print $ofh $mail;

@@ -80,6 +80,8 @@ sub initialize {
 
 	$self->{proc} = [];
 
+	$self->{code} = [];
+
 	$lastmatch = '';
 
 	my $lindex = 0;
@@ -203,8 +205,8 @@ sub initialize {
 	    }
 	    
 	    if ($line =~ m:^[\s]*HEADER[\s]*$:i) {
-		my ($r,$nr,$cm, $lastline) = &getmatch($lindex, \@l);
-		my $ru = new MailTransferMatch('header', $r, $nr, $cm);
+		my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		my $ru = new MailTransferMatch('header', $r, $nr, $cm, $co);
 		push @{$self->{match}}, $ru;
 		$lastmatch = $ru;
 		$lindex = $lastline;
@@ -213,8 +215,8 @@ sub initialize {
 	    }
 
  	    if ($line =~ m:^[\s]*BODY[\s]*$:i) {
-		my ($r,$nr,$cm, $lastline) = &getmatch($lindex, \@l);
-		my $ru = new MailTransferMatch('body', $r, $nr, $cm);
+		my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		my $ru = new MailTransferMatch('body', $r, $nr, $cm, $co);
 		push @{$self->{match}}, $ru;
 		$lastmatch = $ru;
 		$lindex = $lastline;
@@ -223,8 +225,8 @@ sub initialize {
 	    }
 
 	    if ($line =~ m:^[\s]*ALL[\s]*$:i) {
-		my ($r,$nr,$cm, $lastline) = &getmatch($lindex, \@l);
-		my $ru = new MailTransferMatch('all', $r, $nr, $cm);
+		my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		my $ru = new MailTransferMatch('all', $r, $nr, $cm, $co);
 		push @{$self->{match}}, $ru;
 		$lastmatch = $ru;
 		$lindex = $lastline;
@@ -329,6 +331,15 @@ sub initialize {
 		next;
 	    }
 
+	    if ($line =~ m:^[\s]*CODE[\s]+(.*):i) {
+
+		my $p = $1;
+
+		push @{$self->{code}}, $p;
+		
+		next;
+	    }
+
 	    print "strange line in $self->{id} $line \n";
 	}
     } else {
@@ -422,6 +433,10 @@ sub copy {
     my @t9 = @{$f->{proc}};
     
     $self->{proc} = \@t9;
+
+    my @t10 = @{$f->{code}};
+    
+    $self->{code} = \@t10;
 }
 
 sub getmatch {
@@ -433,6 +448,7 @@ sub getmatch {
     my $r = [];
     my $nr = [];
     my $cm = [];
+    my $co = [];
 
     # we check the next line ...
     ++$akline;
@@ -458,6 +474,7 @@ sub getmatch {
  	    || $line =~ m:^[\s]*SENDMAIL[\s]+:i
  	    || $line =~ m:^[\s]*SEND[\s]+:i
  	    || $line =~ m:^[\s]*PROC[\s]+:i
+ 	    || $line =~ m:^[\s]*CODE[\s]+:i
  	    || $line =~ m:^[\s]*STOP[\s]*$:i
  	    || $line =~ m:^[\s]*NONSTOP[\s]*$:i
  	    || $line =~ m:^[\s]*WHY[\s]*$:i
@@ -467,7 +484,7 @@ sub getmatch {
 	    # ok, we have it in. we have hit the next valid thing
 	    -- $akline;
 	    
-	    return ($r, $nr, $cm, $akline );
+	    return ($r, $nr, $cm, $co, $akline );
 	}
 
 	if ($line =~ m:^[\s]*$: ) {
@@ -478,6 +495,9 @@ sub getmatch {
 	} elsif (substr($line, 0, 1) eq '!') {
 	    # we have a notregex in
 	    push @{$nr} , substr($line,1);
+	} elsif (substr($line, 0, 1) eq '&') {
+	    # we have a code in
+	    push @{$co} , $line;
 	} elsif (substr($line, 0, 1) =~ m:^[\s]$:) {
 	    # we have a regex in
 	    push @{$r} , substr($line,1);
@@ -486,7 +506,7 @@ sub getmatch {
 	++ $akline;
     }
 
-    return ($r, $nr, $cm, $akline);
+    return ($r, $nr, $cm, $co, $akline);
 }
 
 sub apply {
@@ -693,7 +713,7 @@ sub apply {
 
 		# ok. we have come so far. we check now this match
 		for ($i = $start; $i <= $end; ++$i) {
-		    if ($matcher->apply($text->[$i], $a_r) == 0) {
+		    if ($matcher->apply($text->[$i], $mail_r, $i) == 0) {
 			$hit = 1;
 			last;
 		    }
@@ -847,6 +867,25 @@ sub apply {
 	}
     }
 
+    my $cnr = 0;
+    foreach my $code (@{$rule->{code}}) {
+	# we append the thing to the mailbox of the user on this box..
+	print $logfh "RULE $id code for $mailnumber ...\n";
+
+	my $codeline = 'sub { ' . $code . '};' ;
+
+	eval {
+	    my $co = eval $codeline;
+
+	    &codeto ( $co , $mail_r, $id, $cnr);
+	};
+
+	if ($@) {
+	    print $logfh "ERROR088: cannot code because $@ \n"; 
+	}
+
+	++$cnr;
+    }
     # now we do the copy thing ...
 
     my $conv = $dirlist->get_convert;
@@ -1028,6 +1067,25 @@ sub procto {
     print $fh "\n";
     
     close $fh;
+}
+
+sub codeto {
+    # we do the proc thing : execute and pipe in the mail 
+    my $code = shift;
+
+    my $mail_r = shift;
+
+    my $rulenumber = shift ;
+
+    my $codenumber = shift;
+
+    eval {
+	&$code($mail_r, $rulenumber, $codenumber);
+    };
+
+    if ($@) {
+	die "cannot execute code : $@ \n";
+    }
 }
 
 sub sentmailto {
