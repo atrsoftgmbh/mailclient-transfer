@@ -1172,4 +1172,95 @@ sub filterit {
     return 0;
 }
 
+sub get_find_wanted {
+    my $self = shift ;
+
+    return sub {
+	# nothing here to do
+    };
+}
+# class methods are here
+
+# siblings are here
+
+use MailTransferDirListVanilla;
+
+use MailTransferDirListClaws;
+
+use MailTransferDirListEvolution;
+
+use MailTransferDirListKmail;
+
+use MailTransferDirListMutt;
+
+use MailTransferDirListSylpheed;
+
+use MailTransferDirListSeamonkey;
+
+use MailTransferDirListThunderbird;
+
+
+# the factory
+
+package MailTransferDirList;
+
+sub factory {
+    my $themailsystem = shift;
+
+    my $infile = shift ;
+    
+    my $dir_or_dummy = shift;
+    
+    if (
+	$themailsystem eq 'vanilla'
+	|| $themailsystem eq 'claws-mail'
+	|| $themailsystem eq 'evolution'
+	|| $themailsystem eq 'kmail'
+	|| $themailsystem eq 'mutt'
+	|| $themailsystem eq 'sylpheed'
+	|| $themailsystem eq 'seamonkey'
+	|| $themailsystem eq 'thunderbird'
+	) {
+	# we have a valid system in now ...
+    } else {
+	die "ERROR008: sorry, but mailsystem $themailsystem is not supported.\n";
+    }
+
+    my $dirlist;
+
+    if ($themailsystem eq 'vanilla') {
+	$dirlist = new MailTransferDirListVanilla($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'claws-mail') {
+	$dirlist = new MailTransferDirListClaws($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'evolution') {
+	$dirlist = new MailTransferDirListEvolution($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'kmail') {
+	$dirlist = new MailTransferDirListKmail($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'mutt') {
+	$dirlist = new MailTransferDirListMutt($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'sylpheed') {
+	$dirlist = new MailTransferDirListSylpheed($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'seamonkey') {
+	$dirlist = new MailTransferDirListSeamonkey($infile, $dir_or_dummy);
+    }
+
+    if ($themailsystem eq 'thunderbird') {
+	$dirlist = new MailTransferDirListThunderbird($infile, $dir_or_dummy);
+    }
+
+    return $dirlist;
+}
+
 1;

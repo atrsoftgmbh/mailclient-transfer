@@ -18,22 +18,8 @@ BEGIN {
     push @INC, ".";
 }
 
-# our datastructures 
-use MailTransferDirListVanilla;
+use MailTransferDirList;
 
-use MailTransferDirListClaws;
-
-use MailTransferDirListEvolution;
-
-use MailTransferDirListKmail;
-
-use MailTransferDirListMutt;
-
-use MailTransferDirListSylpheed;
-
-use MailTransferDirListSeamonkey;
-
-use MailTransferDirListThunderbird;
 
 # end of datastructs
 
@@ -53,61 +39,14 @@ if ($#ARGV < 2 ) {
   
 }
 
-$themailsystem = shift;
+$themailsystem = shift @ARGV;
 
-if ($themailsystem eq 'vanilla'
-    || $themailsystem eq 'claws-mail'
-    || $themailsystem eq 'evolution'
-    || $themailsystem eq 'kmail'
-    || $themailsystem eq 'mutt'
-    || $themailsystem eq 'sylpheed'
-    || $themailsystem eq 'seamonkey'
-    || $themailsystem eq 'thunderbird'
-
-    ) {
-    # we have a valid system in now ...
-} else {
-    print "ERROR001: sorry, but mailsystem $themailsystem is not supported.\n";
-    exit (1);
-}
-
-
-# we read in from input file 
 $infile = shift @ARGV;
+
+$dirlist = MailTransferDirList::factory($themailsystem, $infile, 'dummy');
 
 $outfile = shift @ARGV;
 
-if ($themailsystem eq 'vanilla') {
-    $dirlist = new MailTransferDirListVanilla($infile, 'dummy');
-}
-
-if ($themailsystem eq 'claws-mail') {
-    $dirlist = new MailTransferDirListClaws($infile, 'dummy');
-}
-
-if ($themailsystem eq 'evolution') {
-    $dirlist = new MailTransferDirListEvolution($infile, 'dummy');
-}
-
-if ($themailsystem eq 'kmail') {
-    $dirlist = new MailTransferDirListKmail($infile, 'dummy');
-}
-
-if ($themailsystem eq 'mutt') {
-    $dirlist = new MailTransferDirListMutt($infile, 'dummy');
-}
-
-if ($themailsystem eq 'sylpheed') {
-    $dirlist = new MailTransferDirListSylpheed($infile, 'dummy');
-}
-
-if ($themailsystem eq 'seamonkey') {
-    $dirlist = new MailTransferDirListSeamonkey($infile, 'dummy');
-}
-
-if ($themailsystem eq 'thunderbird') {
-    $dirlist = new MailTransferDirListThunderbird($infile, 'dummy');
-}
 
 my $ifh;
 
@@ -122,10 +61,10 @@ if ($ret != 0) {
 
 close $ifh;
 
+my $ofh;
+    
 if ($ret == 0) {
 
-    my $ofh;
-    
     open($ofh, ">$outfile") or die "ERROR004: cannot open $outfile for write log. \n";
     
     if ($verbose) {
@@ -189,6 +128,9 @@ Check and remove this from the plan, then re-execute it...
 You have to understand that this is too late to change the structure then - 
 this will be better done in a full retry, first get rid of the crap you made,
 then redo it with a changed scan or plan ...
-  
+
+------------------------------------
+This is version ' . $version . '
+------------------------------------  
 ';
 }

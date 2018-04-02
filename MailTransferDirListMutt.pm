@@ -142,6 +142,42 @@ sub filterit {
     return 0;
 }
 
+sub get_find_wanted {
+    my $self = shift ;
+
+    my $candidates_r = shift;
+
+    my $len = length $self->{'sourcefile'};
+    
+    return sub {
+	if (-f $_  && -r $_ ) {
+	    if ($_ =~ m:.:) {
+		# normal file ... 
+
+		my $t = substr($File::Find::name , $len);
+
+		$t =~ s:^\/::;
+
+		if (-s $File::Find::name) {
+		    # we have a non zero file ...
+		    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+			$atime,$mtime,$ctime,$blksize,$blocks)
+			= stat($File::Find::name);
+		    my $k = int($size / 1024) + 1;
+		    $self->{'total'} += $k;
+		    $self->{'anz'} ++;
+		    print "found $t ...\n" if $self->{'verbose'};
+		    print "total is $k K ...\n" if $self->{'verbose'};
+		}
+	    
+		push @{$candidates_r}, $t;
+	    
+		return;
+	    }	
+	}
+    } ;
+}
+
 1;
 # end of file
 

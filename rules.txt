@@ -1,0 +1,41 @@
+#
+# rules are defiend as follows
+# # is comment till end of line
+RULE [\d]+ # the rule number - its unique id - also order of rule execution
+
+# these are the matchers can be one hit, one not hit regex or a call
+HEADER
+SPACE OR TAB regex # the matcher
+!regex # the NOT matcher
+/... in first char  # execute and use result , take a file as mail as parameter 
+
+AND # and a header
+AND NOT # and a header
+BODY 
+AND # and a body
+AND NOT # and a body
+ALL 
+AND # and a all
+AND NOT # and a all
+
+NOTHEADER
+SPACE OR TAB regex # we hit it if regex match header
+NOTBODY
+SPACE OR TAB regex # we hit it if regex match body
+NOTALL
+SPACE OR TAB regex # we hit it if hit anything - macro, set heder and body
+
+ALWAYS # we do this always .. no hit regex required
+NEVER # we do ignore the rule
+
+COPY path # copy if all hits to this folder or mbox file if folder we assume the new...
+SEND mailadress # local amilboxdir copy
+SENDMAIL mailadress # use snedmail or the command in the settings
+PROC processstring # process with that
+
+STOP # stop processing after this if it hits
+NONSTOP # stop processing after this if it hits
+
+WHY # show the regex in log 
+ENDRULE
+

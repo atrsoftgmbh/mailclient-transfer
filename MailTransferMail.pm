@@ -5,12 +5,20 @@ package MailTransferMail;
 # part of the MailTransfer script system
 #
 
+# do output 
 $verbose = 1;
 
+# this is the verion of mine
 $version = '1.0.0';
 
+# our id counter
 $idcount = 1;
 
+# default from line
+$fromline = "From root\@localhost   Mon Feb 12 23:26:05 2018 \n";
+
+
+# object methods
 sub initialize {
     # we initialize here our little thing.
     # depending on the mechanism on top we have diffrent forms

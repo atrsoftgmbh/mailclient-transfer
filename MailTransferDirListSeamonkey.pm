@@ -189,6 +189,120 @@ sub filterit {
     return 0;
 }
 
+sub get_find_wanted {
+    # the generator for the closure function to help find to find its way ...
+    my $self = shift ;
+
+    my $candidates_r = shift;
+
+    my $len = length $self->{'sourcefile'};
+    
+    return sub {
+	if (-f $_  && -r $_ ) {
+	    if (m:^Trash.msf$:) {
+		return;
+	    }
+	
+	    if (m:^Inbox.msf$:) {
+		return;
+	    }
+	
+	    if (m:^Unsent Messages.msf$:) {
+		return;
+	    }
+	
+	    if (m:^Trash$:) {
+		return;
+	    }
+	
+	    if (m:^Inbox$:) {
+		return;
+	    }
+	
+	    if (m:^Unsent Messages$:) {
+		return;
+	    }
+	
+	    if (m:\.msf$:) {
+		my $t = substr($File::Find::name , $len);
+
+		$t =~ s:^\/::;
+	
+		$t =~ s:\.msf$::;
+
+		my $msfonly = $_;
+
+		$msfonly =~ s:\.msf$::;
+	    
+		if ( index($msfonly, '.') > -1) {
+		    # thunderbird and seamonkey does not accept a . as a regular name part, 
+		    # so any file with that is not a thunderbird or seamonkey file
+		    print "ERROR003: ignore msf file $t ... has a dot in ...\n" if $self->{'verbose'};
+		    return;
+		}
+
+		my $data = $File::Find::name;
+		$data =~ s:\.msf$::;
+		if (-s $data) {
+		    # we have a non zero file ...
+		    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+			$atime,$mtime,$ctime,$blksize,$blocks)
+			= stat($data);
+		    my $k = int($size / 1024) + 1;
+		    $self->{'total'} += $k;
+		    $self->{'anz'} ++;
+		    print "found $t ...\n" if $self->{'verbose'};
+		    print "total is $k K ...\n" if $self->{'verbose'};
+		}
+
+		push @{$candidates_r}, $t;
+
+		return;
+	    }
+
+	    if ( index($_, '.') > -1) {
+		# thunderbird and seamonkey does not accept a . as a regular name part, 
+		# so any file with that is not a thunderbird or seamonkey file
+		print "ERROR004: ignore file $_ ... has a dot in ...\n" if $self->{'verbose'};
+		return;
+	    }
+	
+	    if ($_ !~ m:\.msf$:) {
+		# normal file if no msf is there ... 
+
+	    
+		my $msf = $File::Find::name . '.msf';
+	    
+		if (-f $msf) {
+		    # that did we already above ...
+		    return;
+		}
+	    
+		my $t = substr($File::Find::name , $len);
+
+		$t =~ s:^\/::;
+
+		if (-s $File::Find::name) {
+		    # we have a non zero file ...
+		    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+			$atime,$mtime,$ctime,$blksize,$blocks)
+			= stat($File::Find::name);
+		    my $k = int($size / 1024) + 1;
+		    $self->{'total'} += $k;
+		    $self->{'anz'} ++;
+		    print "found $t ...\n" if $self->{'verbose'};
+		    print "total is $k K ...\n" if $self->{'verbose'};
+		}
+	    
+		push @{$candidates_r}, $t;
+
+		return;
+	    }	
+	}
+    } ;
+}
+
+
 1;
 # end of file
 

@@ -30,21 +30,8 @@ BEGIN {
 }
 
 # our datastructures
-use MailTransferDirListVanilla;
+use MailTransferDirList;
 
-use MailTransferDirListClaws;
-
-use MailTransferDirListEvolution;
-
-use MailTransferDirListKmail;
-
-use MailTransferDirListMutt;
-
-use MailTransferDirListSylpheed;
-
-use MailTransferDirListSeamonkey;
-
-use MailTransferDirListThunderbird;
 
 # end of datastructs
 
@@ -73,25 +60,7 @@ if ($#ARGV < 3 ) {
 
 $themailsystem = shift;
 
-if ($themailsystem eq 'vanilla'
-    || $themailsystem eq 'claws-mail'
-    || $themailsystem eq 'evolution'
-    || $themailsystem eq 'kmail'
-    || $themailsystem eq 'mutt'
-    || $themailsystem eq 'sylpheed'
-    || $themailsystem eq 'seamonkey'
-    || $themailsystem eq 'thunderbird'
-    ) {
-    # we have a valid system in now ...
-} else {
-    print "ERROR001: sorry, but mailsystem $themailsystem is not supported.\n" if $verbose;
-    exit (1);
-}
-
-# we read in from input file 
 $outdir  = shift @ARGV;
-
-# no check - can be evan a trick for now ...
 
 $infile = shift @ARGV;
 
@@ -104,6 +73,11 @@ if (! -r $infile ) {
     print "ERROR003: scan file not readable $infile \n" if $verbose;
     exit(1);
 }
+
+$dirlist = MailTransferDirList::factory($themailsystem, $infile, $outdir);
+
+$dirlist->verbose($verbose);
+
 # we have to check this
 
 $outfile = shift @ARGV;
@@ -111,40 +85,6 @@ $outfile = shift @ARGV;
 my $ofh;
 
 open($ofh, ">$outfile") or die "ERROR004: cannot open $outfile for output write. \n";
-
-if ($themailsystem eq 'vanilla') {
-    $dirlist = new MailTransferDirListVanilla($infile, $outdir);
-}
-
-if ($themailsystem eq 'claws-mail') {
-    $dirlist = new MailTransferDirListClaws($infile, $outdir);
-}
-
-if ($themailsystem eq 'evolution') {
-    $dirlist = new MailTransferDirListEvolution($infile, $outdir);
-}
-
-if ($themailsystem eq 'kmail') {
-    $dirlist = new MailTransferDirListKmail($infile, $outdir);
-}
-
-if ($themailsystem eq 'mutt') {
-    $dirlist = new MailTransferDirListMutt($infile, $outdir);
-}
-
-if ($themailsystem eq 'sylpheed') {
-    $dirlist = new MailTransferDirListSylpheed($infile, $outdir);
-}
-
-if ($themailsystem eq 'thunderbird') {
-    $dirlist = new MailTransferDirListThunderbird($infile, $outdir);
-}
-
-if ($themailsystem eq 'seamonkey') {
-    $dirlist = new MailTransferDirListSeamonkey($infile, $outdir);
-}
-
-$dirlist->verbose($verbose);
 
 if ($prefix  ne '') {
     $dirlist->prefix($prefix);
@@ -172,7 +112,7 @@ if ($prefix  eq 'EMPTY') {
     $dirlist->prefix('');
 }
 
-# write our the plan
+# write out the plan
 if ($ret == 0) {
     $ret = $dirlist->gen($ofh);
 }
@@ -214,7 +154,10 @@ This is the generator. you create a plan from the infile. the plan can then be r
 
 Be sure to know what you do if you change the plan - its ok and possible to do it,
 but the thing is not as good checked as the scanfile is.
- 
+
+------------------------------------
+This is version ' . $version . '
+------------------------------------ 
 '; 
 
 }

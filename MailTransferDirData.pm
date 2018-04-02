@@ -836,7 +836,8 @@ sub catit {
 	    print "ERROR150: cannot write to catit log.\n" if $self->{'verbose'};
 	    return 1;
 	}
-	close $fh, $sfh;
+	close $fh;
+	close $sfh;
 	return 0;
     }
     
@@ -873,7 +874,8 @@ sub catit {
 	}
     }
 
-    close $fh, $sfh;
+    close $fh;
+    close $sfh;
 
     print $logfh "catit writed $lines lines .\n" if $self->{'verbose'};
     
@@ -1585,9 +1587,9 @@ sub getamail {
 		    ++$i;
 		    
 		    while ($m_r->[$i] =~ m:^[\s]+[^\s]:) {
-			my $c = $m_r->[$i];
-			$c =~ s:[\s]*$::;
-			$content .= $c;
+			my $d = $m_r->[$i];
+			$d =~ s:[\s]*$::;
+			$content .= $d;
 			++$i;
 		    }
 
@@ -1675,10 +1677,12 @@ sub getamail {
 		
 		++$i;
 
-		$c = $m_r->[$i];
+		if ($i <= $#{$m_r}) {	
+		    $c = $m_r->[$i];
 
-		$c =~ s:^[\s]*::;
-		$c =~ s:[\s]*$::;
+		    $c =~ s:^[\s]*::;
+		    $c =~ s:[\s]*$::;
+		}
 	    }
 
 	    if ($lasthit == 0) {

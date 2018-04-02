@@ -1,0 +1,2064 @@
+Howto transfer mailclient mails from one to another
+Addendum : filtering mails
+
+atrsoftgmbh 2018
+Part of the MailTransfer script system
+
+This contains small chepters with these headings
+
+- For the impatient
+- Names and concepts
+- Concepts again
+- A mail is ...
+- Setting up the rules
+- How does it work ?
+- Making settings
+- Making rules
+- Rules for lists
+- Rules to filter mails you want to see
+- Rules to filter mails you dont want to see
+- Pools
+- How to adjust things
+- How to handle errrrrrroorrrs  - ups ...
+- What is that vanilla thing ?
+- Restrictions
+- History
+- Contact
+
+-------------------------------------------------------------------------------
+
+For the inpatient
+
+You have not much time, so open a shell window or log in - details later...
+
+Then create a working directory, for this we use a t here.
+
+ > mkdir t
+ > cd t
+
+Copy all scripts to the t directory.
+
+> ls
+-rw-rw-r--. 1 ar ar 38004  1. Apr 18:01 MailTransferDirData.pm
+-rw-rw-r--. 1 ar ar  3359  1. Apr 18:01 MailTransferDirListClaws.pm
+-rw-rw-r--. 1 ar ar  4300  1. Apr 18:01 MailTransferDirListEvolution.pm
+-rw-rw-r--. 1 ar ar  3895  1. Apr 18:01 MailTransferDirListKmail.pm
+-rw-rw-r--. 1 ar ar  3220  1. Apr 18:01 MailTransferDirListMutt.pm
+-rw-rw-r--. 1 ar ar 29467  1. Apr 18:01 MailTransferDirList.pm
+-rw-rw-r--. 1 ar ar  5840  1. Apr 18:01 MailTransferDirListSeamonkey.pm
+-rw-rw-r--. 1 ar ar  3298  1. Apr 18:01 MailTransferDirListSylpheed.pm
+-rw-rw-r--. 1 ar ar  5913  1. Apr 18:01 MailTransferDirListThunderbird.pm
+-rw-rw-r--. 1 ar ar  3312  1. Apr 18:01 MailTransferDirListVanilla.pm
+-rw-rw-r--. 1 ar ar  2754  1. Apr 18:01 MailTransferExec.pl
+-rw-rw-r--. 1 ar ar 12523  1. Apr 18:01 MailTransferFilter.pl
+-rw-rw-r--. 1 ar ar  3156  1. Apr 18:01 MailTransferGen.pl
+-rw-rw-r--. 1 ar ar  2052  1. Apr 18:01 MailTransferMail.pm
+-rw-rw-r--. 1 ar ar  2332  1. Apr 18:01 MailTransferMatch.pm
+-rw-rw-r--. 1 ar ar 26006  1. Apr 18:01 MailTransferRule.pm
+-rw-rw-r--. 1 ar ar  4117  1. Apr 18:01 MailTransferScan.pl
+
+Should look similar like this (numbers can chance ).
+
+Create a rulesfile that fits the needs of the filter.
+
+Run the filter like this
+
+> perl MailTransferFilter.pl /var/spool/mail/ar
+
+Now for the ones that have time to ask what and how - the rest....
+
+-------------------------------------------------------------------------------
+
+Names and concepts
+
+This should help you to get in.
+
+First the names.
+
+- mail
+A so called file that is transferred from one computer to another and
+has a format that fullfilles the so called rfc definitions for a
+smtp transfer agent (sendmail, qmail, ...) mail format.
+ 
+- mailserver
+A system that holds mails in, sent them if needed to others via
+some kind of communication network stuff
+
+- mailclient
+A system that makes it possible to read the mails for a user.
+
+- user
+Thats you...
+
+- mailfile
+The file in the filesystem that holds the mail information.
+
+- mailbox
+The thing you have in your mailclient that holds mails - mostly in so
+called folders
+
+- folder
+A collection of mails, not separated any more deeper.
+
+- directory
+A thing in the filesystem of the computer to hold multiple files.
+
+- file
+A thing in the filesystem of the computer to hold data.
+
+- index
+A thing that helps you to find the thing you search. It has
+normally the information about where, what and how big the thing is.
+Sometiems also if you have read it, if you have amade a reply etc etc.
+
+- shell
+A command window or a login window for execution of commands  by using
+the keyboard, so called commandline sometimes
+
+- citate
+A citate starts with a
+### begin
+on its own line and ends with a
+### end
+on its own line. Everything between is the citate text itself...
+
+- storage directory
+The root of all evil - the directory that holds the basic folders
+and sometimes mailfiles. Can be a single thing.
+If your system supports multiple you have to do the transfers
+at best for each separately...
+
+- header
+A mail consits of some technical information at its beginning. This is called
+the header.
+
+- body
+A mail consists of the real content of the mail. This is everything
+after its header.
+
+- mime
+A standard to make mails work with things like attachments and multiple
+kinds of views for a content (text and html for example ).
+
+- rule
+A rule is a thing that describes how the filter should proceed with a mail.
+
+- match
+A match is a thing that is used to check if a rule has to process a
+mail or not.
+
+- maillist
+A system that uses mail to sent you info you want from many users.
+
+----------------------------------------------------------
+
+Concepts
+
+Now that we have that, we can start with the concepts.
+
+The mails are located after you sent them or receive them in the
+filesystem of the machine - computer - whatever you call it - with which
+you now try to see them.
+
+You have a program - some call it nowadays app - that you use to see them.
+
+And sometimes to compose new mails and sent them.
+
+That program is a mailclient program.
+
+We use here mailclients for linux and unix, and we have the mail in files
+that are maintained by the mailclient - not the mailserver.
+
+The transfer works for the mail clients that are today in for linux and
+some other systems.
+
+Here the list that we can use.
+
+claws-mail
+
+Actual version is 3.15.1 
+
+A simple but good looking one, has some additional features. Is a graphical
+user interface - meaning you have things like menus, buttons, and use a
+mouse or trackpad or even a touchscreen to stear it ..
+
+evolution
+
+Actual version is 3.26.5
+
+A more complex program, its part of the gnu desktop programs, and is
+perhaps a full solution for every need ... but also a big one..
+The graphical user interface is in again here...
+
+kmail
+
+Actual version is 5.7.2
+
+Also a more complex program - but this time its another system, the so
+called k desktop environment, that delivers the thing.
+Also a graphical user interface...
+
+mutt
+
+Actual version is 1.9.2
+
+A command line tool, that is popular for the people that use mostly
+the shell and only for small time the GUI of a system.
+It is a part of mostly every unix today and even on windows available.
+
+sylpheed
+
+Actual version is 3.6.0
+
+Seems to me a very simple one of the graphical user interface programs.
+Has focus on mails only...
+
+seamonkey
+
+Actual version is 2.49.1
+
+A big one from the mozilla organisation, is a combination of all the
+things you need in the web today, browser, mail, calendar ...
+Looks like a combination of most isolated programs (firefox, thunderbird)...
+
+thunderbird
+
+Actual version is 52.6.0
+
+A big one from the mozilla organisation, with focus on mails, calendar and
+not so much web here ... of course a graphical one ..
+
+
+-------------------------------------------
+
+Ok. You use one of these. Then you are in.
+
+-------------------------------------------
+
+If you use one of these you are out ( but you can use still a similar ):
+
+geary - cannot be used wihtout an imap server - which i dont use on my system.
+
+mailspring - did not made it on my box after starting.
+
+mulberry - did not start on my box (perhaps a 2007 x86 is simply outdated)
+
+hiri - works only with a microsoft mail server as far as i can say
+
+zimbra - did not start for my user after installation.
+
+So i dont support systems that cannot run on my box.
+
+End of story.
+--------------------------------------------
+
+The systems i support have all a storage for the mails in the filesystem.
+At least today (2018, febuary ..) i can locate the files in question
+without too much sherlock homes things ... if the boys and girls behind
+the tools change that - i cut the support for them. End of story.
+
+You as an user - with exception of mutt users - have a different sight of
+the things. You know folders - lists - already seen, dropped and so on mails
+from your tool.
+
+We have to make a rule file that supports at least a dummy system, vanilla,
+to make a simple filtering.
+
+If you use a mailsystem that cannot be supported directly, you can
+use vanilla as a target or install one that is supportet to see the
+filtered mails.
+
+The mails can be given by a file - the mbox format - or by a directory - the
+maildir format.
+
+You have the setup things.
+
+After that is done you can run the filter against the file you want to filter.
+
+The filter reads in the settings, then the rules, then process that file
+mail by mail from first to last and use every rule from first to last till it has a stop
+for a rule that hits the mail (hit means : all conditions are fullfilled to do the
+things in the rule that we want to be done).
+
+At the end its possible to get rid of the amils you have processed.
+
+-------------------------------------------------------------------------------
+
+A mail is ...
+
+For the transfer a part of a file.
+
+The file is located in the filesystem of the computer that you use - not
+a remote server, nor an imap or pop gateway, and not a binary encrypted thing
+like the microsoft way of life ...
+
+The file can hold one mail at least.
+
+For the mail its a bit fuzzy what it is - the rfc definetely says about
+it something - but in the end we have a thing that we can at best describe
+like this.
+
+- its a text file part
+- it has a header and a body part
+- for the header there are no empty lines in
+- for the body the thing contains of "some" text 
+
+Let us see a small one here to unserstand.
+
+### begin
+From root@hydra.alphaset.de  Sun Feb 11 21:19:34 2018
+X-Mozilla-Status: 0009
+X-Mozilla-Status2: 00000000
+Return-Path: <root@hydra.alphaset.de>
+Received: from hydra.alphaset.de (localhost [127.0.0.1])
+	by hydra.alphaset.de (8.15.2/8.15.2) with ESMTP id w1BKJYuf005341
+	for <ar@hydra.alphaset.de>; Sun, 11 Feb 2018 21:19:34 +0100
+Received: (from root@localhost)
+	by hydra.alphaset.de (8.15.2/8.15.2/Submit) id w1BKJYtx005340
+	for ar; Sun, 11 Feb 2018 21:19:34 +0100
+From: root <root@hydra.alphaset.de>
+Message-Id: <201802112019.w1BKJYtx005340@hydra.alphaset.de>
+Date: Sun, 11 Feb 2018 21:19:34 +0100
+To: ar@hydra.alphaset.de
+Subject: hugo2
+User-Agent: Heirloom mailx 12.5 7/5/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+So 11. Feb 21:19:34 CET 2018
+
+### end
+
+Ok, thats not so much here ..
+
+We have a header. Its from line 
+From root@hydra.alphaset.de  Sun Feb 11 21:19:34 2018
+to line
+Content-Transfer-Encoding: 7bit
+
+You see there is no empty line in - no line with no text at all ...
+
+Then we have an empty line. Its the separation of header and body.
+
+Every mail has this separation - and i count on that in the split thing ..
+Later more about this ...
+
+The body then contains only one line - its 
+So 11. Feb 21:19:34 CET 2018
+
+Again there is an empty line after this - its technically not needed, but
+its normally always in.
+
+This is one mail - you have a lot of technical stuff in.
+
+Your mails are always holding text - its visible with a text editor.
+
+If someone uses not text - well, thats possible, but for the header i think
+at least bad taste...
+
+OK.
+
+We have now two ways a system can store mails.
+
+One is to use one file per mail.
+
+The other is  - use one file for many mails.
+
+The first one is technically better - i like to have things that are ONE
+in ONE physical entity.
+
+So i like it.
+
+If you have multiple mails in one file - you get trouble.
+
+First of all: Changing a file is a read - manipulate - write thing.
+
+This takes time. So we need something to synchronise with others in case
+we have to do jobs with one file only for multiple mails.
+
+Take a look at the unix mailbox in the traditional system.
+
+Its a file in /var/mail or /var/spool/mail.
+
+Name is the name of the user.
+
+You can ls the directory and see for yourself.
+
+If the mailsystem on the computer has to deliver a mail - you are in
+trouble if your mail reader program use the file too.
+
+If you want to add a new mail, and have also delete another by the reader,
+well, thats now a BAD situation ...
+
+So the boys and girls who made the system made several things to solve it.
+
+But in the end ... its still not solved.
+
+One group of developers decided to make a new approach.
+
+They create a directory - some call it a folder - and in there three
+subdirectories.
+
+They are new, tmp and cur.
+
+The subdirectories hold mails in a one mail per file way.
+
+In theory the new mails then go in into the new directory, the
+things are then when they are complete shifted to cur, and the reader then
+makes only access to the cur directory... tmp is used for internal use.
+
+So far the theory.
+
+This is called a maildir storage in the rfc, and so i will call it also a
+
+maildir
+
+here.
+
+The one file only thing is a so called berkley mailbox file - short a
+
+mbox file
+
+here.
+
+Ok. Now we have these two and sometimes a variation of the directory.
+
+For example the sylpheed and claws-mail use a kind of maildir - but dont
+have the new, cur and tmp in.
+
+The thunderbird and seamonkey use the mbox file, also the mutt...
+
+But at last for kmail its a mix on my box - old kmail used mbox,
+new uses maildir ..
+
+
+-------------------------------------------------------------------------------
+
+Setting up the rules
+
+The filter uses some rules to decide what to do.
+Also some defaults and settings are in here.
+
+We check a simple one to see how it works.
+
+Then we set up some additional rules to handle mails you dont want to see.
+
+Here is a first rule file.
+====
+
+# settings for the MailFilter 
+SETTINGS
+MAILSYSTEM evolution
+BASEDIRECTORY /home/ar/.local/share/evolution/mail/local
+PREFIX mailfilter
+ENDSETTINGS
+
+# list filtered here
+RULE 10
+HEADER 
+ users@lists.fedoraproject.org
+COPY lists/fedora
+ENDRULE
+
+# last rule. we sent the thing to ar on the same box
+RULE 9999999
+
+ALWAYS
+SEND ar
+STOP
+ENDRULE
+
+# end of rules
+
+=====
+
+That was not so hard after all ...
+
+Empty lines are allowed, they are ignored...
+
+First we have a thing that is not used - a comment.
+
+# settings for the MailFilter 
+
+It starts with nothing in the line beside empty space and a # sign.
+It is ignored then what follows the # sign.
+Use them. It helps to understand what and why you did something ...
+
+
+Next is a 
+
+SETTINGS
+
+That starts the settings info for the filter.
+It has to be the first thing for the starting rule file.
+
+It has to match an ENDSETTINGS that close the settings.
+
+Next is a mailsystem we use. We have
+
+MAILSYSTEM evolution
+
+in here. You can use yours here - kmail, claws-mail, sylpheed,
+thunderbird, seamonkey. And the naked ones, vanilla for a replacement
+and mutt.
+
+Next is depending to the system you use. The Basedirectory with the mails in
+
+BASEDIRECTORY /home/ar/.local/share/evolution/mail/local
+
+Huh. This is tough. But if you see for the thing in howto.txt for the
+transfer you will find also yours there and how it works.
+
+If any thing fails.....
+
+You need to know where the system starts to put mails on disk.
+The filter can - in theory - work without it if you only target mailaccounts.
+But its much simpler to use it by targetting one users mailsystem.
+
+You can find the thing this way:
+Start in your home directory a find search for a new created folder with a
+very strange and rare name like zzzzzzzzzzzzzz .
+
+You will find for the systmes a directory or file with that name ...
+
+> find . -name '*zzzzzzzzzzzzzz*'
+
+If you use the systems that make decorations to the name - see the howto.txt
+and what the decoration is ... adjust the find search.
+
+When you have the path to the thing you can see the thing you need is the
+rest here till it hits your folder.
+
+Next is a prefix we use for dividing the regular mails and the filtered.
+
+PREFIX mailfilter
+
+This is a folder then in the system and created below the BASEDIRECTORY
+in your mail client system.
+Its a plain name - the decorations and helping files are made according
+to the mailsystem you set in by the filter, no need for you to do it.
+
+Last is here 
+
+ENDSETTINGS
+
+which ends the setting.
+
+The rest are rules.
+
+I have here put in one rule to filter a list and then give the rest with
+the next rule to my account.
+
+I use a special account to get the mails via fetchmail from my account
+at a free mailer.
+
+This one only fetches and filters some unwanted mails ...
+
+The things are then sent to my real user account on the box, and here i do
+the simple thing of filtering the lists and be happy with my mails.
+
+So here comes the first rule
+
+# list filtered here
+RULE 10
+HEADER 
+ users@lists.fedoraproject.org
+COPY lists/fedora
+ENDRULE
+
+The first thing here is
+RULE 10
+
+I use a number to identify rules. Its simple and give the thing a
+way to reuse rules to make more ...
+
+The next is a so called match. It makes the rule work only for the mails
+that have the thing in their header.
+
+HEADER 
+ users@lists.fedoraproject.org
+
+The magic thing here is the second line, with the single space in front.
+
+It declaires a pattern that has to be fit in the header line that is used.
+
+If you see for your mails you will find a lot of patterns you can use,
+but for the mailing list of fedora this is one of the best of them.
+
+Next is a thing that states what to do if the mail fits the match.
+
+COPY lists/fedora
+
+We copy that mail to the folder that is in the mailsystem in mailfilter,
+then lists, then fedora.
+
+Yes, the thing is created if you dont have it. No need to create it by yourself.
+
+And yes, sometimes a system needs a little help to recognise that.
+
+For claws-mail and sylpheed a rescan is needed of folders. See the right
+button menu....
+
+For evolution a switch into the directory, then back and then again in is
+needed.
+
+Thunderbird shows it directly, and mutt and vanilla dont need any help.
+
+The next thing marks the end of the first rule
+
+ENDRULE
+
+So we have the first rule in now. It checks the header of the mail and if
+a pattern match is made successful for the  users@lists.fedoraproject.org
+we make a copy of the mail in the targetet mailsystem in a folder.
+
+The next rule is a special one, its the last in the rules i have in.
+
+# last rule. we sent the thing to ar 
+RULE 9999999
+
+ALWAYS
+SEND ar
+STOP
+ENDRULE
+
+
+We have first a comment in. Ok, thats saying its the last ...
+
+Then the rule with a high number. A eight time 9 ...
+
+The next is an empty line - no checks so far.
+
+A
+ALWAYS
+states the rule will be done - always.
+
+Next is a
+SEND ar
+which sends the mail to the account ar mailbox file on the box...
+
+So be careful not to sent to the file you just check - this can get ugly ...
+
+In the case of the box i have made the filter, the mbox is in
+/var/spool/mail
+and the name is the name of the login of my user, ar.
+
+The next is redundand, only to remind you that a rule that is fitting
+eats up the mail normally.
+STOP
+
+Ok, so no more processing after that rule.
+
+Again a
+
+ENDRULE
+
+closes the thing.
+
+
+
+------------------------------------------------------------------------
+
+How does it work ?
+
+The filter uses the rulefile first to set the default things it need.
+
+If you start with an non existing rule file - it will stop because its not
+there. So you need at least a readable file.
+
+The filter also checks if you have the minimum settings in -
+without settings it could work, but it would be a bit odd.
+
+So its also a safety against giving the filter a wrong file for rules.
+
+You must at least have in SETTINGS and ENDSETTINGS and one rule.
+
+All things else are set with minimum defaults and works at least under normal
+conditions on my box.....
+
+You can have a rule that does nothing at all in.
+
+RULE 0
+
+ENDRULE
+
+This will simply be ignored as a rule - but counts as one for the check if
+you have any rules.
+
+But then - why do you need a filter ? To do WHAT ? And HOW ?
+
+But you can try it.
+
+The thing will start, create a log and then process your input files.
+But it will not filter anything.
+
+OK, so next is the thing you can do with the settings and rules ...
+
+The rule file can be used with the -r switch, or the default in $HOME/.mailfilter.rule
+
+
+-----------------------------------------------------------------------------
+
+Making settings
+
+First we simply name the settings and make for every one an example.
+
+I use my setup for my box, its easier for me that way :)
+
+MAILSYSTEM a_supported_mailsystem
+
+MAILSYSTEM evolution
+
+# or kmail, claws-mailsylpheed,mutt,vanilla,thiunderbird,seamonkey
+
+This is the name of the mailsystem we use to put mails into its folders.
+Its technically needed.
+The default is vanilla. It is a dummy system, ony to hold mails on disk.
+
+
+
+BASEDIRECTORY a_directory_path
+
+BASEDIRECTORY /home/ar/vanilla
+
+This is the path to get to the basedirectory for the mailsystem. We need
+this to construct the real path to the point where the filter
+starts to make its folders and then put in the mails.
+
+The thing is tricky, its highly depending on the used system.
+See the howto.txt and there for the used mailsystems if you dont know it.
+
+If you cant understand this, make in your mailprogramm a folder where you
+want to start the filter. Name it in a way its unique ..
+
+Then use the glory search tool of your choice to hit it.
+I use find for that (see commandline, shell and then man find ...)
+
+OK. If we have it in then ... its easy. Use that name as the prefix, the rest
+is then done relative to it...
+
+Default is your home directory and then the subdirectory vanilla.
+
+
+
+MAILBOXDIR a_path_to_the_mailbox_directory
+
+MAILBOXDIR /usr/mail
+
+This is a thing to describe where to copy mails when you use the SEND
+directive. It then takes the path that follows and uses it
+to make the copy of the mail into that file.
+For now only mbox files are supported, i plan to support maildir later ...
+
+Default is /var/spool/mail
+
+
+PREFIX a_vanilla_folder_name
+
+PREFIX mailfilter
+
+This is the prefix folder - or directory vanilla name - for the path that the
+filter uses to put mails in with COPY.
+
+The full path is made by using the BASEDIRECTORY - possibly relative to
+the working  directory - and then construct the rest with the prefix and then
+the argument  to COPY as a vanilla path.
+The filter converts the vanilla path to the real path for your mailsystem,
+which can be a bit different, and then puts the file in place...
+
+Default is mailfilter
+
+
+SENDMAIL mailercommandline
+
+SENDMAIL /usr/bin/sendmail
+
+This is used as the program path for the SENDMAIL directive. The mail is
+sent by calling the thing with the argument of SENDMAIL directive and pipes
+the mail into the program (thats the sendmail way of life ... )
+
+Default is /usr/sbin/sendmail -bm -oi
+
+#WOW. and we use the . line trick ...
+
+
+EAT_INPUT a_number
+
+EAT_INPUT 1
+
+This is a flag that says how to handle processed input for the filter.
+
+If the filter succeeds in processing its convenient to kill the input.
+That means for input files that they are cut to 0 length - but not deleted.
+
+The directory case is to delete the files in - not the directory itself.
+
+Default is 0
+
+# and only 1 is working for now ... any thing else is as 0
+
+
+EXACT a_number
+
+EXACT 1
+
+This is used in case a maildir directory or a single mail in a mbox file is in.
+You skip then the checks for the end and simply use the whole file.
+This is handy if there are mails included inside of amils and you cannot split this up.
+But its only a hack - so dont use it for mbox files , only for maildir in doubt.
+
+Default is 0
+
+
+POOL a_pool_directory_path
+
+POOL spamrules
+
+This is a safeguard thing. You can have mails to construct new rules.
+Thats nice, but also give raise to security.
+
+If someone finds how to do it ...
+
+So the only way to add a rule by using a mail is to do it into a pool
+that already exists.
+
+Here we can tell the thing what pool exist ...
+And we can use multple of them to name multiple pools.
+
+In the real life i use a pool for spam rules.
+
+Default is
+
+# yes, that right, nothing...
+
+
+CODE a_perl_code_file
+
+CODE inc.pl
+
+The filter can be tailored by using perl code that you write.
+
+The code is read in just before the real filtering starts, so you have the
+rules and  the target mailsystem already in.
+
+This will in a laterversion be used to make callbackcode.
+
+Then i have a & in teh matchers to call the code instead to call a program.
+For now its read in, but no use in matchers ...
+
+Default is
+
+# yes, again its empty.
+
+
+MAILBOXKIND a_mailsystem_kind
+
+MAILBOXKIND mbox
+
+This is the way to say the thing what is the kind of mailboxdir.
+
+If you have a berkley mbox system - the sendmail way of life - its
+a directory of mbox format files. So mbox is it.
+
+Later on i plan to support the rest...  for now i have only mbox.
+
+Default is mbox
+
+
+-----
+
+Ok. So far we have now in a way to set this.
+
+Above we have a small example, here comes a bit more realistic one
+
+SETTINGS
+
+  MAILSYSTEM thunderbird
+  BASEDIRECTORY /home/ar/.thunderbird/o0hd68d2.default/Mail/Local Folders
+  # yes, that IDIOTS realy need spaces in pathnamens .... and have that
+  # profile synto thing in ...
+
+  MAILBOXDIR /usr/spool/mail
+  # thats not right on my box, but works for many
+
+  MAILBOXKIND mbox
+  # thats the only that work for now, but we have it in ...
+
+  PREFIX myfilterone
+  # if you have diffrent filters, you can use diffrent prefix in here ...
+
+  SENDMAIL mutt
+  # ups. didnt try that, but it can work i think ...
+
+  EAT_INPUT 1
+  # ok. we will kill processed input to make no double time things ...
+
+  EXACT 0
+  # we have mbox files in, so use the split thing
+  
+  POOL maillistrules
+  POOL spamrules
+  POOL maggierules
+  POOL FBIRULES
+
+  # wow, thats a lot f pools and rules in here ...
+
+
+  CODE myinclude.pl
+  # here i can do some things with the lists and rules set up so far
+  # and deliver code to use ...
+  
+ENDSETINGS
+
+Did i tell you that you can
+- use space and tab to make look it nice ?
+- use the # thing only on lines of itself, not , no, never, ever ... after
+  one of the keywords ? 
+- even : you can use upper and lower case ...
+
+no, but it should work that way ...
+
+
+-----------------------------------------------------------------------------
+
+Making rules
+
+The dense thing ...
+
+
+A Rule consists of the Startline, the endline and any line between
+has to be empty, a comment or a match or a directive.
+the endline is
+ENDRULE
+
+The Startline is one of these four
+RULE IDNUMBER
+RULE AUTO
+RULE IDNUMBER EXTENDS IDNUMBEROTHERRULE
+RULE AUTO EXTENDS IDNUMBEROTHERRULE
+
+A directive is one of these
+ALWAYS
+NEVER
+NOTNEVER
+STOP
+NONSTOP
+WHY
+NEWRULE
+COPY vanilla_path_relative
+SEND targetuser
+SENDMAIL targetuser
+PROC programcommandline
+CODE perfunctioncodeline # not implemented
+
+A match is one of these followed by matchpatterns line by line
+HEADER
+BODY
+ALL
+NOTHEADER
+NOTBODY
+NOTALL
+
+To combine the matches you can use
+AND
+AND NOT
+
+A matchpattern is a perl regular expression or a commandline preceeded by a identificator.
+SPACE for a regular pattern that has to match
+! for a pattern that has NOT to match
+/ for the command
+& for a perlcodeline # not mplementet now
+
+In case of the command it means the thing has to be absolut, and you have to give the full path.
+
+the patterns are perl regular expressions and must compile as "usual" patterns.
+
+I dont support complex things and taging of matches, so dont overdo it ...
+
+Perhaps i will extend it some day to do the ignore thing ...
+
+
+-----------------------------------------------------------------------
+The not so dense ....
+
+A rule start with the line
+Rule ..
+
+The rest is simple. We want to identify the rule if we need, so a number is in.
+
+In the simplest case you give the number.
+
+rule 42
+or
+RULE 1
+or
+Rule 66
+or
+rule 123783628764328683277674
+
+Well, perhaps this a bit overkill... use one to 9 digits to be save.
+
+I do give numbers for important rules.
+
+The not so important rules can get a number as long as its unique.
+
+So we have a placeholder in, the auto thing.
+It uses the last number, adds one and gives this to the rule.
+
+So instead of giving all the time numbers i give
+rule auto
+if i dont care about the exact value.
+
+The number is needed in case we want to extend a rule for a new one.
+The extend is a practical thing, you have a blueprint of a rule, and now
+you put additional things in.
+
+My extend is othen used for lists with multiple input mailadresses. So is
+for example my spam rule one without any match
+RULE 1000
+COPY fileter/spam
+ENDRULE
+
+So it will catch nothing at all.
+
+But in the spamrule pool i use all the time
+rule auto extends 1000
+
+Meaning: I create here a new one, use the rule 1000 as the blueprint and
+put only a specific matcher in ..
+
+This is called some times object orientated way of life ... i call it practical,
+but this is your decision if you do it this way.
+
+The last is with numbers.
+rule 2000 extends 1000
+
+Ok. No auto for it, so it has the number 2000 this time...
+
+# one hint: i dont check for doubles, but try to not use it ...
+
+This is the way to get rules in.
+
+You have to end a rule with
+
+endrule
+
+Many people like or need it shorter, but i resist here to use the
+programmers way of life... () [] {} or whatever you normally use.. its not
+user friendly at all 
+
+Use a editor to cut and paste if its too much to type ...
+
+Most rules have some - perhaps sometimes more - actions that they do when they
+hit the mail ...
+
+What hit means comes later ...
+
+We can copy the mail to a target on the same box. Its the maildir thing,
+on my linux box the maildirectory is in /var/spool/mail and has the form of
+mbox format files. Every file is named as the username (and most likely
+the home directory for the user ).
+
+I can also use multiple SEND in here, no problem.
+
+The SENDMAIL does a real mail sending, so in theory one can route the mails
+even to another box (well, and if you are a bad person even spam that way ..)
+
+This is done with the argument as a mailadress.
+
+The program in use is sendmail - if you use another make sure it handles the
+way of feeding in the mail the same ...
+
+I think you can use mutt, but i havent checked it ...
+
+You can also use a PROC for it.
+
+The PROC then gets the mail as input piped in like a sendmail.
+But no last line with the . on it...
+
+Be sure to know what you do - the thing is given the mail in a pipe, and
+when the pipe ends the program should have done its thing ... so try a
+fork and work approach if you need...
+
+The rest is easy.
+
+If I need a rule that is doing it ever time, i have the
+always
+in. It is normally simply done for the last rule - with the highest id ...
+
+If you insist you can make AND with rules, then the always can be skipped
+if the former rule is not a hit ...
+
+Next thing is to make a rule but - ignore it for now, the
+
+NEVER
+
+is doing that job. Its for rules that are in for test, but you have no time
+for now, so you decide NOT to have it in for now ...
+
+NEVER is nearly the same as commenting the whole thing.
+
+NEVER can still be better if you decide to make an extend.
+
+But then ... you need to switch the NEVER off...
+
+So we have also a
+NOTNEVER
+
+This is a rare thing, i dont use it by myself ... but you CAN use it ...
+
+The WHY is to get some info in the logfile ...
+
+# did i say logfile ? hm ...
+
+We have normally for a rule if it hits that it also STOP the processing.
+
+So we normally have a filter that is used to get to a rule and when we have
+a hit in its finished for that mail. Next mail please.
+
+Sometimes we do still want the rest rules to be processed.
+So we have the STOP explicitly to show we stop here, but its not needed...
+
+But then : if we want to proceed further we have to switch that stop off..
+
+So we have the NONSTOP here to make it through even if we hit the rule.
+
+That makes the extends again need the stop if we used in the extended rule
+a nonstop and now wnat to have back the stop ...
+
+OK. That leaves us with the NEWRULE and then we enter the so called matches.
+
+NEWRULE is a hack to use mail to define new rules.
+
+I work parttime at my job far away from my box and have no way to access it.
+
+So sending a special mail that is then used to make a new rule is handy.
+
+But to do it with a separate program call like proc seemed to be a bit overkill,
+So i made an extension to process the mail inside of the filter.
+
+If your mail hits a rule with newrule it will be processed to make a new
+rule file.
+There are limitations, so you can only create one rule with one mail, it must
+work out and you can only put it into an existing pool.
+
+No overwrite or so - the worst you end up is wasting disk space.
+
+
+Ok.
+
+Now its time for the match thing.
+
+A rule is processed by checking if its a always , a never and then if it has
+matches. If it has neither of these, its skipped and so the next rule is used.
+
+Its done in the reasonable from 1 to end way.
+
+I use normally 99999999 for my end .
+
+This is a big number, so we have plenty of rules in ...
+
+A rule that really checks something needs at least one match.
+
+A match is simple to write:
+
+header
+ atr@atrsoft.de
+
+That is all.
+
+Where to be doing the check (header) and then one space and the mailadress in question.
+
+This will (accidently) hit my mailadress in the header of the mail in question.
+
+If the match is given, i say its a hit.
+
+A rule that has a simple isolated match is fullfilled - or call it like
+you want - if a match is a hit.
+
+So simple.
+
+We only need to have the thing in question - header, body or all - and then
+the pattern (if you dont know that a simple text) we want to hit, and a space in
+front of it and BINGO.
+
+You have a mail you think is important because it has a big number in its body ?
+
+BODY
+ 1000000
+
+will do the job.
+
+Oh, its not one million ?
+
+Ahm.
+
+BODY
+ 1000000
+BODY
+ 1000001
+BODY
+  ....
+
+OK. Thats a bit nerving...
+
+So we enter now the REAL power of matches.
+
+The match pattern is a so called regular expression in perl.
+
+See man grep and man perlre and in doubt the glory www.perl.com doc page
+for the details.
+
+So we can use
+BODY
+ [\d]{8,16}
+
+and have numbers from 8 to 16 digits in ... happy now ?
+
+Next thing.
+
+Sometimes we need to match a line - but then something should NOT be in...
+
+So we can use a match with a pattern to match and another NOT to match.
+
+Need a mailadress in but a specific not ?
+
+header
+ [^\s]+@atrsoft.de
+!info@atrsoft.de
+
+This will hit all mailadresses for atrsoft.de,
+but it will not hit info@atrsoft.de in the SAME line.
+
+
+Multiple checks for the same time are also ok
+
+header
+ atr@atrsoft.de
+ anton.rommerskrichen@gmx.de
+
+This will need both to hit the SAME line.
+
+
+You need multiple lines to hit ?
+
+Use multiple matches.
+
+Header
+ atr@atrsoft.de
+Header
+ second@atrsoft.de
+
+Ok. So we hit if its the first or the second ...
+
+Ups. I forgot something.
+
+We use IMPLICIT an so called OR here.
+
+Everytime you use a rule and it has more than one thing in its a logical OR ..
+
+So one of it is enough and you hit.
+
+Sometimes this is handy.
+
+If I have multiple info letters from different shops for hardware i can combine
+like this
+
+header
+ newsletter@euronics.de
+header
+ info@geizhals.at
+
+
+and so on. Will go into the same folder / mailbox / proc ....
+
+Ah.
+
+Yes.
+
+There is of course then also a way to combine matches.
+
+The AND thing.
+
+If you want two matches hit together you combine them with AND
+
+header
+ atr@atrsoft.de
+AND
+header
+ Cc: anton.rommerskirchen@gmx.de
+
+
+This will hit as a rule only if both is hit for the mail.
+
+One is not enough.
+
+The nice thing: it works with as many AND as you want ...
+
+The other thing.
+
+If you really need it you can AND NOT
+
+header
+ atr@atrsoft.de
+AND NOT
+body
+ bitcoins
+
+So we only have a hit if the thing is for my mailadress but the body does
+not contain  the magic buzzword of today spam machinery...
+
+There is again the thing to use the AND NOT as long as you need ...
+
+Multiple matches are this way easy, but dont forget the AND if you need it.
+
+The OR is implicit, so this will be possible
+
+header
+ atr@atrsoft.de
+AND NOT
+body
+ bitcoins
+
+header
+ anton.rommerskirchen@gmx.de
+AND
+body
+ [\d]{8,16} EURO
+
+so we hit if its for my company email adress, but no bitcoins in,
+or if its for my private and a huge amount of euros ... 
+
+Just as it should be ...
+
+Fine.
+
+If you have something you definetly DONT want to have in you have a
+one match thing shortcut for that.
+
+NOTHEADER
+ To:
+COPY filter/spam
+
+This comes in handy if a mail has no To: in its header. Sometimes a
+spammer forgets it by purpuse, so if I get a mail without a To: in the
+header I drop it.
+
+This is the way to express it - the rule drops the mail by COPY to spam
+folder, but only it the hader has not a To: in, if its in the rule
+does not hit.
+
+same for
+
+NOTBODY
+ http://www.xxx.com
+
+well, if I dont want to get the mail in the rule I can exclude it that way ...
+
+The NOTALL combines the two.
+
+Important thing:
+
+Only one pattern, and only matches with space here.
+
+Next thing.
+
+You have a fancy quantum supercomputer or a hyper brand new AI system and
+want to use it too.
+
+So you can combine the checks for a match with a helper program like this
+
+header
+ atr@atrsoft.de
+/home/ar/call_my_ai
+
+Then the check for the pattern is made, and if that is done the program
+is called. It gets a mail copy as a file as first parameter, so it has to
+use the first parameter as the filename and can now use the mail to do
+what it has to do ...
+
+The match then checks for the return code.
+- a 1 means no good.
+- a not 1 (technically 0 and the rest beside 1 ) means ok.
+
+If you made an error in the program return a 1 if you want to make no
+error in the filter - the mail will survive that rule, but its better then to
+wreck in the filter and never see it again.
+
+
+The rest is now to play with this a bit and after you think you have it
+to make your rules.
+
+One hint: there are pools and there is a include thing to make use of pools.
+
+Dont code all rules in one file if you dont need to - use pools and include.
+
+-----------------------------------------------------------------------------
+
+Rules for lists
+
+Lists are one thing that is nice in mails. You subscribe and get it all.
+
+The problem is when you get much mail.
+
+If you want to see them in ...
+
+Make a rule to catch before the spam checks, then route directly.
+
+I have a list for music.
+
+So I catch the thing directly.
+
+Rule 42
+Header
+ From: .*tangomusic.es
+SEND ar
+ENDRULE
+
+So I get all of it directly without any spam check - never lose a mail...
+
+
+Another list is - well - a lot of mails ...
+
+Rule 43
+header
+ users@lists\.fedoraproject\.org
+COPY lists/fedora
+ENDRULE
+
+This one collects them in the folder in the mailsystem.
+
+I only read what looks interesting ... not all... and not every time
+I check my mails.
+
+Sometimes lists have multiple sources:
+
+rule 44 extends 43
+header
+ fedora-list@redhat\.com
+endrule
+
+This is doing a check twice. So its perhaps better to have a
+basic rule - no check but the copy, and then two extends to do the
+check.
+
+Or.
+
+Use one rule for all ...
+
+Rule 43
+header
+ users@lists\.fedoraproject\.org
+header
+ fedora-list@redhat\.com
+COPY lists/fedora
+ENDRULE
+
+Both works. You decide.
+
+
+-----------------------------------------------------------------------------
+
+Rules to filter mails you want to see
+
+
+I use a setup where I have first my list rules in.
+
+The List rules also cover the mails that I HAVE , MUST, ALWAYS and so on
+see....
+
+So my rules are starting with 10 - a little reseve if needed ...
+
+The next ten or so are lists, the rest till I hit the spam are individual
+mailadresses I dont want to miss..
+
+rule 42
+header
+ melissa@work.de
+SEND ar
+ENDRULE
+
+and so on ....
+
+So I get it before any strange mail filter effect in the spam rules get them.
+
+This can be indeed a problem.
+
+Get many mails for my company and they are mostly spam.
+
+Rule 1010
+header
+ info@atrsoft.de
+COPY lists/info
+endrule
+
+So I can now check the info list after the regular mails and see if any
+non spam is in.
+
+If I have an important I make a rule before spam and get there the thing
+on track...
+
+If I would do that with all info - I get rough 40 mails per week about
+credits, insurances and so on that dont interest me at all ...
+
+But because its the company I cannot drop them all - sometimes clients
+or my consulting lawyer use that thing ...
+
+So, this can reduce the spam, you see only for the subjects or sendes and
+ignore the things you dont need... its like a list...
+
+-----------------------------------------------------------------------------
+
+Rules to filter mails you dont want to see
+
+Well.
+
+Thats the tough on.
+
+We talk about spam.
+
+Technical there is no spam.
+
+Every mail is simply without a flag or tag about that when it leaves the sendes
+networkport.
+
+The spam tag of providers is - at best - a hint ....
+
+And it fails in the last time about 70 % now.
+
+OK.
+
+There are so called spamcheckers, but they work mostly on a neutral ruleset.
+No clue about what you really dont want to see.
+
+Of course all can be extended by you with new info ...
+
+But thats a different story.
+
+Try it.
+
+If you want to do it yourself, you can enter that game here by
+defining rules to catch spam mails.
+
+My base work is a rule that does not catch at all.
+
+rule 1000
+copy filter/spam
+endrule
+
+my real catchers do the work then like this
+
+rule auto extends 1000
+header
+ pussy
+endrule
+
+or
+
+rule auto extends 1000
+body
+ bitcoins
+endrule
+
+
+Well. Sort of.
+
+Because there is no technical spam - all mails are valid according to mime and
+the rfc - you cannot make a spam detector on top of only the header and body
+structure ...
+
+Some try to make similar mails automatic to spam after they find one as
+a prototype mail ....
+
+Well. That means you have either to read the first - and then to decide how to
+get rid of the next one of that type ...
+
+Or you have to relay on the work of others -- which have perhaps a
+different way to think about a mail as you have....
+
+Meaning: You can loose mails in error in spam...
+
+# didnt happen to you ? wow. lucky guy ....
+
+So next is to identify the mails you dont want to see by using the things
+you have to see - the header info ....
+
+Its in every mail system and if you have sharp eyes and a good mind
+and thinking for regex ... it works.
+
+After hundert or so rules you have - nearly - catched up and
+no spam.
+
+But when a new way of spam is there ...
+
+Well, you get it.
+
+Its work YOU have to do. YOU have to add a new rule.
+
+How ?
+
+I think my way is ok, but ...
+
+I use a editor parallel, standing in the pool for spamrules, copy the last
+and change the header match. Save, next ...
+
+Alternative is to make a mail with the new rule.
+
+Cut and paste from the mail source code in the mailtool the thing, then open a new mail,
+Sent it to my filter account, add only the magic 4 lines
+RULE AUTO EXTENDS 1000
+HEADER
+ #whatever you have in mind for that bastard ...
+EDNRULE
+
+
+Ok, there is a special subject, and some other stuff, also a POOL that has
+to be named, but that its. After my account has processed the mail the new rule
+is in place and my buddy now kills this one too.
+
+This can be used of course also when I am off ... only my mail has to
+come in ...
+
+
+Last thing:
+
+If you really need it you can use the process check .
+
+See the matcher for it.
+
+I know its slowing things down, but you can make WHAT YOU WANT...
+
+So use it if you think you need it.
+
+For myself I plan to make some extensions, but not for now, so
+use that thing if you have a check for a mail and its woking...
+
+Perhaps - but not now - I integrate a callback thing and you can do
+it inside of the filter with perl code directly.
+
+But perl is normally not the thing of the day, so if you are a python or
+java guy.. use the program check.
+
+
+-----------------------------------------------------------------------------
+
+Pools
+
+Ok, we have alredy talked about them...
+
+A pool is a directory that contains rulefiles.
+
+You have to be precise about the naming of that files.
+
+The pool is used in two ways.
+
+One is to get all files in it in when you start the filter.
+
+To do that the pool has to be accessible (ha, what a joke ... of course it is .. ahm, ups ...)
+
+Check director rights. Check the working directory for the filter.
+
+Then put the rule files into the directory you have choosen ...
+
+Next.
+
+For a pool the files have to follow a naming convention.
+
+The name should be :
+s number . rule
+
+s is the character s
+
+dot is the character .
+
+number is  a number, can be zero filled # what i use myself !
+
+The last part must be the rext rule.
+
+Any thing else is ignored (no subdirectories, no files with other names ... )
+
+Well. In theory.
+
+The thing comes in when you add a rule by newrule.
+
+The content of the directory is scanned and the next number is used (I know,
+I will change that later to do it opposite, but for now its the last) and the
+new rule file gets auomatically the next number.
+
+So no overwrite of rules if only one filter is active.
+
+Yes.
+
+I know, how to use...
+
+We have in the rule file an INCLUDE thing.
+
+This means we can write after a rule - not INSIDE ! - an include and
+give it the path to the pool.
+
+The rest is simple.
+T
+The load for the actual file stops, the targetet directory is scanned and all rule files in
+there are loaded in the order of filenames (there is a sort in,
+but its a name sort, not a number sort .. so the filled with 0 numbers make sense...)
+
+If you want to you can also include a file directly.
+
+See this two here
+
+# spammer rule ... 
+RULE 1000
+COPY filter/spam
+WHY
+ENDRULE
+
+
+INCLUDE spampool
+
+INCLUDE ./royal_casino_rule.rule
+
+First i make the basic work for my spam , then i
+include the pool with all the tiny match rules, and then i have one file with a
+bastard in at last ...
+
+This is how a pool is used in the filter for reading.
+
+Together with generation of rules its worth the work ...
+
+
+-------------------------------------------------------------------------------
+
+How to adjust things
+
+First things first.
+
+You need the basic rule file.
+
+settings
+
+blablabla
+
+endsettings
+
+
+Ok. That is done.
+
+Then you need the lists you want to catch and the important mails.
+
+Perhaps this is the first spot to use a pool, perhaps not.
+
+My 15 rules are - ok in the file, so I dont use a pool here ..
+
+Next is the spam thing.
+
+I use a pool and I maybe will set up a second one for complex things...
+
+Next is the last rule that does work, it corrects some mistakes of a spam rule
+didnt have time to do the spam rule right, so its in here ...
+
+Last is the always rule to put the survivors in place ...
+
+Next is to put the thing with the defaultname in the home directory - or to
+use the -r option for the filter program run.
+
+Then the filter itself.
+
+It has to run in two cases for me.
+One is for my box where I read the mails.
+
+I need there the filtering of lists.
+
+The other is for the account where I pull the mails from the internet,
+Precise from a freemailer where all my mails end up in the first place.
+
+There I run the spam filtering.
+
+So I have to run it for me allone, but at two places.
+
+Make a copy of the scripts, set it up there with a copy of the rules ...
+
+You can also think about a multiuser scenario.
+
+There you need the script in a place hidden for the other users with a gid bit
+set so that the thing can SEND to different users on the box... or use
+SENDMAIL only for that ...
+
+Both has its charme - using SEND is rough hundrets times faster and much
+cheaper in resources.
+
+Using a spechial version of sendmail only for the copy to the target users
+is an alternative. Also using queueing for the whole process to speed it up..
+
+Next is testing - first without filters.
+
+In the testing you will start to love the logfile ...
+
+UPS, yes, didnt mention it so far.
+
+There is the -l option in the filter.
+Also the default is in the home directory and mailfilter.log .
+
+So you see for every run the initial file or directory, the rulefile
+settings, the number and rule source files (here the convention to name them
+as the numbers come in handy !) and then for the mails in the target file
+which rule had an interesting thing .. a hit, a not thing or a never
+or always ...
+
+So you can see what happend - and if any thing fails, the -c makes the thing
+write down the mails so you can now use the mails number and check directly it.
+
+Helps.
+
+After the rules for spam come in ... test test test ....
+
+-------------------------------------------------------------------------------
+
+How to handle errrrrrroorrrs  - ups ...
+
+There is no perfect world.
+
+So errors are possible.
+
+If you have a bad setup for settings its mostly covered and the thing stops.
+
+For rules its diffrent . I dont like to stop for an defective rule ...
+
+I skip it.
+
+So you have a filter - but it normally leaves a bit too much in, not drops.
+
+If you have an operation that is not possible, say a copy that not work,
+a send that not work or a sendmail or proc, you get an error in the console
+and in the log.
+
+If you have a subprogram - it depends on the error.
+I let live a mail if the check is not a 1.
+
+So if your program wrecks its not a 1, and if it runs normal you are in place
+to return the right number at last.
+In doubt make a shell wrapper and do the things you have to do.
+
+SEE ALWAYS INTO THE LOG IF THE ERROR IS NEAR ...
+
+# perhaps i make a summary mail and sent it at the end to the master
+of the process, but for now you have to check the log....
+
+For testing : use the -r for a simple rulefile, the -l for a clean logfile.
+
+
+-------------------------------------------------------------------------------
+
+History
+
+The thing is as always.
+
+You fire up your new installed system, then you fire up your new mailclient
+version.
+
+Then you have a more and more ... disappointing experiance ...
+
+Then you decide to give it a try for a new folder here and there ...
+
+Then you realise its not working right ...
+
+Then you want to switch to another ...
+
+And after reading tons of nice and shiny descriptions like ...
+
+... make the folders exactly like in the old one ...
+
+... sometimes a file is not transfered ....
+
+... for me it worked ...
+
+... for me it worked not at all ...
+
+
+you decide to do it not dirty.
+
+You are a software developer after all ...
+
+So i started to make an analyse and found that most things were at least
+a problem of the new index thing of my former mailclient.
+
+It had simply changed - and i had not done every upgrade one by one ...
+
+So i got out of sync for the indexing and ...
+
+Things became bad.
+
+Very bad.
+
+I lost the ability to do simplest lookups, lost even the possibility
+to select mails in folders that i had still in the main gui ...
+
+Thats bad. I needed not the "make all folders like in the old " thing, i
+needed a total clean export and import.
+
+But there is none - no one seems to like an neutral export at all ..
+
+Everyone likes an import if - its an outdated and long gone version
+for the others ... haha ... nice thinking...
+
+So i began the scan thing.
+
+First with find - but using this in a shell script was far from good
+so i switched to perl and then to the perl find.
+
+OK. I had made some steps, and i realized that it would be better to do it
+in several steps, not one.
+
+I had first the scan of the old files, then the  decide what to do thing,
+the creation of new directories ...
+
+So i came up with a scanner.
+
+This was a thing that worked nearly ok - found after some debugging that i
+had still an mbox file in my system - its a maildir based today...
+
+So much for theory.
+
+I made the analyse for the target one - and found the directories very
+different at best ...
+
+OK. So the thing became after the scanner the generator - still no damage
+done, only a new text file ...
+
+This gave me the option to do the thing with the normalized names.
+
+And then a colleague of mine came with "oh, and i want to migrate then to ...."
+
+Of course not MY favorite one ...
+
+So i decided to make the executor work for that too.
+
+After some playing with it i had found nearly everthing ok ...
+
+Had made my experiance with evolution - and the scan and rebuild index at exit
+thing...
+
+Then i had seen the msf thing in thunderbird - oh boy, what a mess ...
+
+Then i tried the others ... only to see that its still one of the three big
+that i want to use - but now i could do it for all of them ...
+
+Then i integrated more checks and more errors.. so i got again debugging
+sessions to do, but i found next problems now faster ...
+
+And yes, i did even learn a thing about using the oo way with perl...
+
+So i finally made a hunt for the possible systems ...
+
+And came up with only a hand full more.
+
+At last i decided to make an export and import thing for my own.
+
+So i introduced the vanilla - again errors and again more debugging ..
+
+Found the problems for a structure where no structure was and - bingo.
+
+Now i peeked at the last ones -- but many only made a cold shoulder...
+
+I tried the command line tools - mutt, pine .. ok, alpine now ..
+
+And found them to do the mbox thing just like thunderbird....
+
+Then i tried one last time to get the beasts up that were not
+running on the box ... but no luck.
+
+So i ended with the list i have now (25.02.2018 german time) in.
+
+Hope i will make it now with my plan to make a automatic import.
+
+And have decided to give this to YOU so you can solve your problem with it.
+
+Ah . the Filter ...
+
+I almost forgot it.
+
+I have a setup with a mail account that collects all mails for a big
+freemailer.
+Then i use a account on my server to get my mails from it. Its done by
+
+fetchmail
+
+The thing does it now since 2002 ...
+
+The fetchmail is used from a user that has only to deal with mails fetching,
+filter out the lists and some spam , and deliver the rest to the main user on
+my box.
+
+So i had the
+procmail
+in and it worked for nearly the same time.
+
+Till an upgrade made the thing no longer working.
+
+So i started after the transfer the filter thing.
+
+It was also a rework of my transfer, and made many simple bugs visible.
+
+So i checked to make any thing work not only for my thing, but also
+for the user that has no procmail in or so and simply needs a filter.
+
+Then i found some uses for the rule system  - it is now using a pool
+for rules that filter out some unwanted mails.
+
+The rest is still now in motion. i try to make the best for filtering,
+but it seems that a simple match filter is too simple to do the job
+today.
+
+so i try to make it better every day - at lest a bit 
+
+Happy mail filtering.
+
+------------------------------------------------------------------
+
+Contact
+In case you have questions - read this howto. Check the source.
+
+If this is not enough sent me a mail
+
+atr AT atrsoft DOT de
+
+replace AT with the mails at sign and dot with the . and delete the spaces.
+
+This is against the automates that hunt fro email adresses ..
+
+Next.
+
+If you have trouble - i read mails not on a per day, more a per
+week base .. you get answer, but it can take a week.
+
+Next.
+
+If you have no clue - sent me the scanfile, the planfile, the logfile.
+
+NO Mailtree - i dont plan to access somebody mails - and it would be
+impossible for real big ones... have 3 G for myself ...
+
+So the three files and the output of them - a rerote into a file.
+
+please - dont estimate i cna read minds .. if you did something after
+a scan and changed something here and there ... i will not get it.
+
+Next.
+
+Pack those files into one zip / tar .
+
+And compress it - or my mailbox will not handle it ...
+
+Thanks for helping me to help you ...
+
+The source is on github, so i hope somebody will still step in and
+maintain it when i am gone - then the email above  of course will
+change to that guy ..
+
+
+If you have problems with rules - zip them and i try to see what i can do.
+
+At last :
+
+This is work under the APACHE 2.0 license, so dont do silly things with it..
+

@@ -18,27 +18,13 @@ BEGIN {
     push @INC, ".";
 }
 
-# we use the find to scan a tree of directories
-use File::Find;
-
 # our data structures
-use MailTransferDirListVanilla;
-
-use MailTransferDirListClaws;
-
-use MailTransferDirListEvolution;
-
-use MailTransferDirListKmail;
-
-use MailTransferDirListMutt;
-
-use MailTransferDirListSylpheed;
-
-use MailTransferDirListSeamonkey;
-
-use MailTransferDirListThunderbird;
+use MailTransferDirList;
 
 # end of datastructs
+
+# we use the find to scan a tree of directories
+use File::Find;
 
 
 # check parameters
@@ -63,25 +49,12 @@ if ($#ARGV < 2 ) {
 
 $themailsystem = shift;
 
-if (
-    $themailsystem eq 'vanilla'
-    || $themailsystem eq 'claws-mail'
-    || $themailsystem eq 'evolution'
-    || $themailsystem eq 'kmail'
-    || $themailsystem eq 'mutt'
-    || $themailsystem eq 'sylpheed'
-    || $themailsystem eq 'seamonkey'
-    || $themailsystem eq 'thunderbird'
-    ) {
-    # we have a valid system in now ...
-} else {
-    print "ERROR001: sorry, but mailsystem $themailsystem is not supported.\n" if $verbose;
-    exit (1);
-}
-
-
 # we read in from input file 
 $infile = shift @ARGV;
+
+$dirlist = MailTransferDirList::factory($themailsystem, $infile, 'targetunknown');
+
+$dirlist->verbose($verbose);
 
 $outfile = shift @ARGV;
 
@@ -91,41 +64,6 @@ my $ofh;
 
 open($ofh, ">$outfile") or die "ERROR007: cannot open $outfile for output write. \n";
 
-# we dont need a factory
-
-if ($themailsystem eq 'vanilla') {
-    $dirlist = new MailTransferDirListVanilla($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'claws-mail') {
-    $dirlist = new MailTransferDirListClaws($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'evolution') {
-    $dirlist = new MailTransferDirListEvolution($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'kmail') {
-    $dirlist = new MailTransferDirListKmail($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'mutt') {
-    $dirlist = new MailTransferDirListMutt($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'sylpheed') {
-    $dirlist = new MailTransferDirListSylpheed($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'seamonkey') {
-    $dirlist = new MailTransferDirListSeamonkey($infile, 'targetunknown');
-}
-
-if ($themailsystem eq 'thunderbird') {
-    $dirlist = new MailTransferDirListThunderbird($infile, 'targetunknown');
-}
-
-$dirlist->verbose($verbose);
 
 if ($prefix  ne '') {
     $dirlist->prefix($prefix);
@@ -138,24 +76,10 @@ if ($prefix  eq 'EMPTY') {
 if ( -d $infile ) {
 
     chdir($infile);
+
+    my $wanted_r = $dirlist->get_find_wanted (\@candidates);
     
-    if ($themailsystem eq 'vanilla') {
-	find (\&wanted, $infile);
-    } elsif ($themailsystem eq 'claws-mail') {
-	find (\&wanted, $infile);
-    } elsif ($themailsystem eq 'evolution') {
-	find (\&wanted, $infile);
-    } elsif ($themailsystem eq 'kmail') {
-	find (\&wanted, $infile);
-    } elsif ($themailsystem eq 'sylpheed') {
-	find (\&wanted, $infile);
-    } elsif ($themailsystem eq 'mutt') {
-	find (\&wantedmutt, $infile);
-    } elsif ($themailsystem eq 'seamonkey') {
-	find (\&wantedthunderbirdseamonkey, $infile);
-    } elsif ($themailsystem eq 'thunderbird') {
-	find (\&wantedthunderbirdseamonkey, $infile);
-    } 
+    find ($wanted_r, $infile);
 }
 else {
     open(IN, "$infile") or die "ERROR008: cannot open the input file $infile \n";
@@ -167,8 +91,8 @@ else {
 
 	# special cases. we ignore them ...
 
-	if ($self->filterit($_) ) {
-	    &ignore;
+	if ($dirlist->filterit($_) ) {
+	    print "ERROR005: Ignore directory " . $_ . "\n" if $verbose;
 	    next;
 	}
 
@@ -204,170 +128,6 @@ exit ($ret);
 
 # end of main
 
-sub wanted {
-    if (-d $_ ) {
-	if (m:^\.$:) {
-	    &ignore ;
-	    return;
-	}
-	
-	if (m:^\.\.$:) {
-	    &ignore ;
-	    return;
-	}
-	
-	my $t = substr($File::Find::name , length $infile);
-
-	$t =~ s:^\/::;
-	
-	if ($dirlist->filterit($t)) {
-	    &ignore;
-	    return;
-	}
-
-	push @candidates, $t;
-
-	return;
-    } 
-}
-
-sub wantedthunderbirdseamonkey {
-    if (-f $_  && -r $_ ) {
-	if (m:^Trash.msf$:) {
-	    return;
-	}
-	
-	if (m:^Inbox.msf$:) {
-	    return;
-	}
-	
-	if (m:^Unsent Messages.msf$:) {
-	    return;
-	}
-	
-	if (m:^Trash$:) {
-	    return;
-	}
-	
-	if (m:^Inbox$:) {
-	    return;
-	}
-	
-	if (m:^Unsent Messages$:) {
-	    return;
-	}
-	
-	if (m:\.msf$:) {
-	    my $t = substr($File::Find::name , length $infile);
-
-	    $t =~ s:^\/::;
-	
-	    $t =~ s:\.msf$::;
-
-	    my $msfonly = $_;
-
-	    $msfonly =~ s:\.msf$::;
-	    
-	    if ( index($msfonly, '.') > -1) {
-		# thunderbird and seamonkey does not accept a . as a regular name part, 
-		# so any file with that is not a thunderbird or seamonkey file
-		print "ERROR003: ignore msf file $t ... has a dot in ...\n" if $verbose;
-		return;
-	    }
-
-	    my $data = $File::Find::name;
-	    $data =~ s:\.msf$::;
-	    if (-s $data) {
-		# we have a non zero file ...
-		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-		    $atime,$mtime,$ctime,$blksize,$blocks)
-		    = stat($data);
-		my $k = int($size / 1024) + 1;
-		$dirlist->{'total'} += $k;
-		$dirlist->{'anz'} ++;
-		print "found $t ...\n" if $verbose;
-		print "total is $k K ...\n" if $verbose;
-	    }
-
-	    push @candidates, $t;
-
-	    return;
-	}
-
-	if ( index($_, '.') > -1) {
-	    # thunderbird and seamonkey does not accept a . as a regular name part, 
-	    # so any file with that is not a thunderbird or seamonkey file
-	    print "ERROR004: ignore file $_ ... has a dot in ...\n" if $verbose;
-	    return;
-	}
-	
-	if ($_ !~ m:\.msf$:) {
-	    # normal file if no msf is there ... 
-
-	    
-	    my $msf = $File::Find::name . '.msf';
-	    
-	    if (-f $msf) {
-		# that did we already above ...
-		return;
-	    }
-	    
-	    my $t = substr($File::Find::name , length $infile);
-
-	    $t =~ s:^\/::;
-
-	    if (-s $File::Find::name) {
-		# we have a non zero file ...
-		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-		    $atime,$mtime,$ctime,$blksize,$blocks)
-		    = stat($File::Find::name);
-		my $k = int($size / 1024) + 1;
-		$dirlist->{'total'} += $k;
-		$dirlist->{'anz'} ++;
-		print "found $t ...\n" if $verbose;
-		print "total is $k K ...\n" if $verbose;
-	    }
-	    
-	    push @candidates, $t;
-
-	    return;
-	}	
-    }
-}
-
-sub wantedmutt {
-    if (-f $_  && -r $_ ) {
-	if ($_ =~ m:.:) {
-	    # normal file ... 
-
-	    
-	    my $t = substr($File::Find::name , length $infile);
-
-	    $t =~ s:^\/::;
-
-	    if (-s $File::Find::name) {
-		# we have a non zero file ...
-		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-		    $atime,$mtime,$ctime,$blksize,$blocks)
-		    = stat($File::Find::name);
-		my $k = int($size / 1024) + 1;
-		$dirlist->{'total'} += $k;
-		$dirlist->{'anz'} ++;
-		print "found $t ...\n" if $verbose;
-		print "total is $k K ...\n" if $verbose;
-	    }
-	    
-	    push @candidates, $t;
-
-	    return;
-	}	
-    }
-}
-
-sub ignore {
-    print "ERROR005: Ignore directory " . $_ . "\n" if $verbose;
-}
-     
 sub usage {
 
 print 'usage: perl MailTransferScan.pl  [ -p prefix ]  mailsystem findlistfile|sourcedirectory outfile
@@ -399,6 +159,9 @@ The resulting outfile is input for a checker or for a generator for plan.
 You can edit the outfile to make things fit to your needs, see the
 howto file for this. 
 
+---------------------------------------------
+This is version ' . $version . '
+---------------------------------------------
 Where to start the scan ?
 
 

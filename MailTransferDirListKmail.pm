@@ -175,6 +175,43 @@ sub filterit {
     return 0;
 }
 
+sub get_find_wanted {
+    # the generator for the closure function to help find to find its way ...
+    my $self = shift ;
+
+    my $candidates_r = shift;
+
+    my $len = length $self->{'sourcefile'};
+    
+    return sub {
+	if (-d $_ ) {
+	    if (m:^\.$:) {
+		print "ERROR005: Ignore directory " . $_ . "\n" if $self->{'verbose'};
+		return;
+	    }
+	
+	    if (m:^\.\.$:) {
+		print "ERROR005: Ignore directory " . $_ . "\n" if $self->{'verbose'};
+		return;
+	    }
+	
+	    my $t = substr($File::Find::name , $len);
+
+	    $t =~ s:^\/::;
+	
+	    if ($self->filterit($t)) {
+		print "ERROR005: Ignore directory " . $_ . "\n" if $self->{'verbose'};
+		return;
+	    }
+
+	    push @{$candidates_r}, $t;
+
+	    return;
+	} 
+
+    };
+}
+
 1;
 # end of file
 

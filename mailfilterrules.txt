@@ -1,0 +1,159 @@
+
+# settings for the MailFilter - use the defaults in doubt ... 
+SETTINGS
+# the mailsystem is ...
+# MAILSYSTEM vanilla
+# BASEDIRECTORY /home/ar/transfermails/v
+# PREFIX mailfilter
+# the target for SEND it here
+# MAILBOXDIR /var/spool/mail
+# MAILBOXKIND mbox
+# we sent mails via this 
+# SENDMAIL /usr/sbin/sendmail -bm -oi
+ENDSETTINGS
+
+# a mail list filtered here
+RULE 1
+HEADER fedora-list@redhat\.com
+COPY /filter/fedora
+ENDRULE
+
+# a mail list filtered here
+RULE 2
+HEADER users@lists\.fedoraproject\.org
+COPY /filter/fedora
+ENDRULE
+
+# spammer rule ... 
+RULE 3
+# definitiv bad guys out
+HEADER .*atrsoft\.deatr.*
+COPY /filter/spam
+WHY
+ENDRULE
+
+
+# spammer rule ... 
+RULE 4
+# some abzockers 
+HEADER .*Royal Club Casin.*
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 5
+# what the fuck is that 
+HEADER From.*adius.*group
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 6
+# oha, the xxx guys ...
+HEADER From.*(SexyGirl24)|(TryViagraFree)|(Enlargment System)|(Online Deals)|(Go all Night)|(eblica)
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 7
+# again xxx guys
+HEADER Subject:(.*anadian.*RX)
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 8
+# and again xxx
+HEADER Subject:(Sexy Lady sucht)
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 9
+# some boring make the world better guys
+HEADER Subject:.*An Alle die zu faul sind zum Arbeit
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 10
+# and again xxx guys
+HEADER Subject:.*pussy.*
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 11
+# and again xxx guys
+HEADER Subject:.*fuck.*and.*suck
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 14
+# auto genrators seem to use that in the body
+BODY image=3D\.jpg
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 15
+# some trickers 
+HEADER ^From: .*(wwc)|("Microsoft" <security@microsoft.com>)|("RAV AntiVirus" <ravms@mail-fe-02.datacenter.kerpen.ish.de>)|(Anton.roesch)
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 16
+# again some tricksers
+HEADER ^To: .*mail\.ish\.de
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 17
+# tricksers
+HEADER ^Received: from simmu.*\.utaonline\.at
+COPY /filter/spam
+WHY
+ENDRULE
+
+
+# spammer rule ... 
+RULE 18
+# ang some xx spammers tooo
+HEADER ^Subject.*\..\..\..\.
+COPY /filter/spam
+WHY
+ENDRULE
+
+# spammer rule ... 
+RULE 19
+# the blue pil dealers ....
+HEADER ^Subject.*V.*AGRA
+COPY /filter/spam
+WHY
+ENDRULE
+
+
+# last rule. we sent the thing to ar and use sendmail to sent it to atr too
+RULE 999
+
+ALWAYS
+SEND ar
+SENDMAIL atr
+STOP
+ENDRULE
+
+# end of rules
