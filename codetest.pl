@@ -20,6 +20,8 @@ sub checkfedoralist {
 
     my $cnr = shift ; # my code check number to identify the check
 
+    my $lnr = shift;
+    
     my $i = index($c, 'users@lists.fedoraproject.org');
 
     return 1 if $i == -1; # bad. no good 

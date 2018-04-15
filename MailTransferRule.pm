@@ -42,6 +42,8 @@ sub initialize {
     my $level = shift;
 
     my $fname = shift;
+
+    my $lnr = shift ;
     
     if ($#_ == -1) {
 	# we have only text now in. its from a scanner parser and contians the
@@ -54,6 +56,8 @@ sub initialize {
 
 	$self->{filename} = $fname;
 	
+	$self->{line} = $lnr;
+	
 	$self->{stop} = 1;
 
 	$self->{and} = $lastand;
@@ -65,6 +69,11 @@ sub initialize {
 	$self->{never} = 0;
 
 	$self->{newrule} = 0;
+
+
+	$self->{store} = 1;
+
+	$self->{routecount} = 9999; #  magic number ... so many in ...
 
 	$self->{match} = [];
 
@@ -149,8 +158,25 @@ sub initialize {
 		next;
 	    }
 
+	    # hidden nice thing - rule only is like auto
+	    if ($line =~ m:^[\s]*RULE[\s]*$:i) {
+		my $id = $lastid + 1;
+
+		$self->{id} = $id;
+
+		$lastid = $id;
+
+		next;
+	    }
+
 	    if ($line =~ m:^[\s]*ALWAYS[\s]*$:i) {
 		$self->{always} = 1;
+
+		next;
+	    }
+
+	    if ($line =~ m:^[\s]*NOT[\s]+STORE[\s]*$:i) {
+		$self->{store} = 0;
 
 		next;
 	    }
@@ -161,7 +187,7 @@ sub initialize {
 		next;
 	    }
 
-	    if ($line =~ m:^[\s]*NOTNEVER[\s]*$:i) {
+	    if ($line =~ m:^[\s]*NOT[\s]+NEVER[\s]*$:i) {
 		$self->{never} = 0;
 
 		next;
@@ -172,7 +198,7 @@ sub initialize {
 		next;
 	    }
 	    
-	    if ($line =~ m:^[\s]*NONSTOP[\s]*$:i) {
+	    if ($line =~ m:^[\s]*NOT[\s]+STOP[\s]*$:i) {
 		$self->{stop} = 0;
 		next;
 	    }
@@ -182,7 +208,12 @@ sub initialize {
 		next;
 	    }
 	    
-	    if ($line =~ m:^[\s]*NEWRULE[\s]*$:i) {
+	    if ($line =~ m:^[\s]*NOT[\s]+WHY[\s]*$:i) {
+		$self->{why} = 0;
+		next;
+	    }
+	    
+	    if ($line =~ m:^[\s]*NEW[\s]+RULE[\s]*$:i) {
 		$self->{newrule} = 1;
 		next;
 	    }
@@ -205,36 +236,80 @@ sub initialize {
 	    }
 	    
 	    if ($line =~ m:^[\s]*HEADER[\s]*$:i) {
-		my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
-		my $ru = new MailTransferMatch('header', $r, $nr, $cm, $co);
-		push @{$self->{match}}, $ru;
-		$lastmatch = $ru;
-		$lindex = $lastline;
+		eval {
+		    my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		    my $ru = new MailTransferMatch('header', $r, $nr, $cm, $co);
+		    push @{$self->{match}}, $ru;
+		    $lastmatch = $ru;
+		    $lindex = $lastline;
+		};
 
+		if ($@) {
+		    print "ERROR750: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    exit (1);
+		}
 		next;
 	    }
 
  	    if ($line =~ m:^[\s]*BODY[\s]*$:i) {
-		my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
-		my $ru = new MailTransferMatch('body', $r, $nr, $cm, $co);
-		push @{$self->{match}}, $ru;
-		$lastmatch = $ru;
-		$lindex = $lastline;
+		eval {
+		    my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		    my $ru = new MailTransferMatch('body', $r, $nr, $cm, $co);
+		    push @{$self->{match}}, $ru;
+		    $lastmatch = $ru;
+		    $lindex = $lastline;
+		};
+
+		if ($@) {
+		    print "ERROR751: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    exit (1);
+		}
 
 		next;
 	    }
 
 	    if ($line =~ m:^[\s]*ALL[\s]*$:i) {
-		my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
-		my $ru = new MailTransferMatch('all', $r, $nr, $cm, $co);
-		push @{$self->{match}}, $ru;
-		$lastmatch = $ru;
-		$lindex = $lastline;
+		eval {
+		    my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		    my $ru = new MailTransferMatch('all', $r, $nr, $cm, $co);
+		    push @{$self->{match}}, $ru;
+		    $lastmatch = $ru;
+		    $lindex = $lastline;
+		};
+
+		if ($@) {
+		    print "ERROR752: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    exit (1);
+		}
+
 
 		next;
 	    }
 
-	    if ($line =~ m:^[\s]*NOTHEADER[\s]*$:i) {
+	    if ($line =~ m:^[\s]*ROUTE[\s]*$:i) {
+		eval {
+		    my ($r,$nr,$cm, $co, $lastline) = &getmatch($lindex, \@l);
+		    my $ru = new MailTransferMatch('route', $r, $nr, $cm, $co);
+		    push @{$self->{match}}, $ru;
+		    $lastmatch = $ru;
+		    $lindex = $lastline;
+		};
+
+		if ($@) {
+		    print "ERROR753: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    exit (1);
+		}
+
+
+		next;
+	    }
+
+	    if ($line =~ m:^[\s]*ROUTECOUNT[\s]+([\d]+)$:i) {
+		$self->{routecount} = 0 + $1;
+		next;
+	    }
+
+	    if ($line =~ m:^[\s]*NOT[\s]+HEADER[\s]*$:i) {
 
 		++$lindex;
 		
@@ -248,13 +323,14 @@ sub initialize {
 		
 		};
 		if ($@) {
-		    print "cannot compile in rule " . $self->{id} . " $re ..\n";
+		    print "ERROR724: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    exit(1);
 		}
 		
 		next;
 	    }
 
- 	    if ($line =~ m:^[\s]*NOTBODY[\s]*$:i) {
+ 	    if ($line =~ m:^[\s]*NOT[\s]+BODY[\s]*$:i) {
 
 		++$lindex;
 		
@@ -268,13 +344,14 @@ sub initialize {
 		
 		};
 		if ($@) {
-		    print "cannot compile in rule " . $self->{id} . " $re ..\n";
+		    print "ERROR725: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    exit(1);
 		}
 		
 		next;
 	    }
 
-	    if ($line =~ m:^[\s]*NOTALL[\s]*$:i) {
+	    if ($line =~ m:^[\s]*NOT[\s]+ALL[\s]*$:i) {
 
 		++$lindex;
 		
@@ -288,12 +365,60 @@ sub initialize {
 		    push @{$self->{notbody}}, $qre;
 		};
 		if ($@) {
-		    print "cannot compile in rule " . $self->{id} . " $re ..\n";
+		    print "ERROR726: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    exit(1);
 		}
 		
 		
 		next;
 	    }
+
+ 	    if ($line =~ m:^[\s]*WHITELIST[\s]*$:i) {
+
+		++$lindex;
+		
+		my $re = $l[$lindex];
+		$re =~ s:^[\s]::;
+
+		eval {
+		    &MailTransferMail::add_white($re);
+		};
+		if ($@) {
+		    print "ERROR727: cannot whitelist in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    exit(1);
+		} 
+		else
+		{
+		    $self->{store} = 0;
+
+		 }   
+		
+		next;
+	    }
+
+ 	    if ($line =~ m:^[\s]*BLACKLIST[\s]*$:i) {
+
+		++$lindex;
+		
+		my $re = $l[$lindex];
+		$re =~ s:^[\s]::;
+
+		eval {
+		    &MailTransferMail::add_black($re);
+		};
+		if ($@) {
+		    print "ERROR728: cannot blacklist in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    exit(1);
+		}
+		else
+		{
+		    $self->{store} = 0;
+
+		 }   
+		
+		next;
+	    }
+
 
 	    if ($line =~ m:^[\s]*COPY[\s]+(.*):i) {
 
@@ -340,10 +465,12 @@ sub initialize {
 		next;
 	    }
 
-	    print "strange line in $self->{id} $line \n";
+	    print "ERROR701: strange line in rule $self->{id} rulefile $fname line $lnr \n$line\nthis is an error.\n";
+	    exit (1);
 	}
     } else {
-	print "ERROR101: wrong number of parameters.\n";
+	print "ERROR702: wrong number of parameters rulefile $fname line $lnr \n.\nthis is an error.\n";
+	exit (1);
     }
     
     return ;
@@ -379,7 +506,7 @@ sub copyif {
     }
 
 
-    die "ERROR601:father $fatherid not found in extends rule ... \n"; 
+    die "ERROR730:father $fatherid not found in extends rule ... \n"; 
 }
 
 sub copy {
@@ -398,6 +525,8 @@ sub copy {
     $self->{and} = $f->{and};
 
     $self->{why} = $f->{why};
+
+    $self->{store} = $f->{store};
 
     $self->{always} = $f->{always};
 
@@ -462,23 +591,28 @@ sub getmatch {
 	if ($line =~ m:^[\s]*HEADER[\s]*$:i
 	    || $line =~ m:^[\s]*BODY[\s]*$:i
 	    || $line =~ m:^[\s]*ALL[\s]*$:i
+	    || $line =~ m:^[\s]*ROUTE[\s]*$:i
+	    || $line =~ m:^[\s]*ROUTECOUNT[\s]+:i
 	    || $line =~ m:^[\s]*AND[\s]*$:i
 	    || $line =~ m:^[\s]*AND[\s]+NOT[\s]*$:i
-	    || $line =~ m:^[\s]*NOTHEADER[\s]*$:i
- 	    || $line =~ m:^[\s]*NOTBODY[\s]*$:i
- 	    || $line =~ m:^[\s]*NOTALL[\s]*$:i
+	    || $line =~ m:^[\s]*NOT[\s]+HEADER[\s]*$:i
+ 	    || $line =~ m:^[\s]*NOT[\s]+BODY[\s]*$:i
+ 	    || $line =~ m:^[\s]*NOT[\s]+ALL[\s]*$:i
+ 	    || $line =~ m:^[\s]*BLACKLIST[\s]*$:i
+ 	    || $line =~ m:^[\s]*WHITELIST[\s]*$:i
  	    || $line =~ m:^[\s]*ALWAYS[\s]*$:i
+ 	    || $line =~ m:^[\s]*NOT[\s]+STORE[\s]*$:i
  	    || $line =~ m:^[\s]*NEVER[\s]*$:i
- 	    || $line =~ m:^[\s]*NOTNEVER[\s]*$:i
+ 	    || $line =~ m:^[\s]*NOT[\s]+NEVER[\s]*$:i
  	    || $line =~ m:^[\s]*COPY[\s]+:i
  	    || $line =~ m:^[\s]*SENDMAIL[\s]+:i
  	    || $line =~ m:^[\s]*SEND[\s]+:i
  	    || $line =~ m:^[\s]*PROC[\s]+:i
  	    || $line =~ m:^[\s]*CODE[\s]+:i
  	    || $line =~ m:^[\s]*STOP[\s]*$:i
- 	    || $line =~ m:^[\s]*NONSTOP[\s]*$:i
+ 	    || $line =~ m:^[\s]*NOT[\s]+STOP[\s]*$:i
  	    || $line =~ m:^[\s]*WHY[\s]*$:i
- 	    || $line =~ m:^[\s]*NEWRULE[\s]*$:i
+ 	    || $line =~ m:^[\s]*NEW[\s]+RULE[\s]*$:i
  	    || $line =~ m:^[\s]*ENDRULE\b:i
 	    ) {
 	    # ok, we have it in. we have hit the next valid thing
@@ -494,15 +628,21 @@ sub getmatch {
 	    push @{$cm} , $line;
 	} elsif (substr($line, 0, 1) eq '!') {
 	    # we have a notregex in
-	    push @{$nr} , substr($line,1);
+	    my $rt = substr($line,1);
+	    my $rtest = qr/$rt/;
+	    push @{$nr} , $rt;
 	} elsif (substr($line, 0, 1) eq '&') {
 	    # we have a code in
 	    push @{$co} , $line;
 	} elsif (substr($line, 0, 1) =~ m:^[\s]$:) {
 	    # we have a regex in
-	    push @{$r} , substr($line,1);
+	    my $rt = substr($line,1);
+	    my $rtest = qr/$rt/;
+	    push @{$r} , $rt;
+	} else {
+	    die "ERROR740: text not ok in match $line ";
 	}
-
+	    
 	++ $akline;
     }
 
@@ -577,6 +717,12 @@ sub apply {
 	return (0,0); # never have an error, never have a stop
     }
 
+    if ($rule->{'store'} == 0) {
+	# no more test needed
+	print $logfh "RULE $id not store for $mailnumber ...\n" if $verbose;
+	return (0,0); # never have an error, never have a stop
+    }
+
     # always  ...
 
     # normal execution of apply
@@ -587,6 +733,50 @@ sub apply {
 	$lasterg = 0;
 
 	print $logfh "RULE $id always for $mailnumber ...\n";
+    } elsif ($rule->{routecount} < 9999) {
+	# we have the magic routecount check in
+	$reason = 'routecount';
+
+	if ($mail_r->valid_trace == 0) {
+
+	    my $t  = $mail_r->{traceroute};
+	    
+	    my $count = $#{$t};
+
+	    if ($count == -1) {
+		# no trace at all .... ignore that .. break the rest
+		$lasterg = 1;
+		return (0,0);
+	    }
+
+	    my $hostlines = 0;
+	    for (my $i = 1; $i <= $count; ++$i) {
+		my $c = $t->[$i];
+
+		$c =~ s:[\s]+ms[\s]+::g;
+		
+		$c =~ s:[\s]+ms$::g;
+		
+		if ($c =~ m:\.[a-zA-Z]:) {
+		    # we have a valid domain in ...
+		    ++$hostlines;
+		}
+	    }
+	    
+	    if ($hostlines < $rule->{routecount}) {
+		$lasterg = 0;
+		# go on and do what you have to do ...
+	    } else {
+		$lasterg = 1;
+		
+		return (0,0);		
+	    }
+	    
+	} else {
+	    $lasterg = 1; # for all and rules that follow us
+		
+	    return (0,0);
+	}
     } else {
 
 	# if there is no test, we leave ... its an extend rule 
@@ -698,25 +888,63 @@ sub apply {
 		    $start = $hbegin;
 		    $end = $hend;
 		    $text = $h_r;
+		    
+		    # ok. we have come so far. we check now this match
+		    for ($i = $start; $i <= $end; ++$i) {
+			if ($matcher->apply($text->[$i], $mail_r, $i) == 0) {
+			    $hit = 1;
+			    last;
+			}
+		    }
+
 		} elsif ($type eq 'body') {
 		    $start = $bbegin;
 		    $end = $bend;
 		    $text = $b_r;
+		    
+		    # ok. we have come so far. we check now this match
+		    for ($i = $start; $i <= $end; ++$i) {
+			if ($matcher->apply($text->[$i], $mail_r, $i) == 0) {
+			    $hit = 1;
+			    last;
+			}
+		    }
+
 		} elsif ($type eq 'all') {
 		    $start = $abegin;
 		    $end = $aend;
 		    $text = $a_r;
+		    
+		    # ok. we have come so far. we check now this match
+		    for ($i = $start; $i <= $end; ++$i) {
+			if ($matcher->apply($text->[$i], $mail_r, $i) == 0) {
+			    $hit = 1;
+			    last;
+			}
+		    }
+
+		} elsif ($type eq 'route') {
+		    $start = $#{$mail_r->{traceroute}};
+
+		    if ($start > -1) {
+			# ok, we have a trace to test here ...
+			$text = $mail_r->{traceroute};
+		    
+			# ok. we have come so far. we check now this match
+			for ($i = $start; $i >= 0; --$i) {
+			    if ($matcher->apply($text->[$i], $mail_r, $i) == 0) {
+				$hit = 1;
+				last;
+			    }
+			}
+		    } else {
+			# no hit for this rule ...
+		    }
+		    
+
 		} else {
 		    print "ups. what is that matcher here ? " . $matcher->{type}  . "\n";
 		    next;
-		}
-
-		# ok. we have come so far. we check now this match
-		for ($i = $start; $i <= $end; ++$i) {
-		    if ($matcher->apply($text->[$i], $mail_r, $i) == 0) {
-			$hit = 1;
-			last;
-		    }
 		}
 
 
@@ -803,11 +1031,27 @@ sub apply {
 	# we append the thing to the mailbox of the user on this box..
 	print $logfh "RULE $id send to $sent  for $mailnumber ...\n";
 
+	if ($rule->{why}) {
+	    &why_info($mail_r, $logfh);
+	}
+	
 	my $msg = '';
+
+	my $i;
 	
 	for ($i = $hbegin; $i <= $hend ; ++$i) {
+	    last if $h_r->[$i] =~ m/^content-type:/i; 
 	    $msg .=  $h_r->[$i];
 	}
+
+	$msg .= $mail_r->traceoutput($id,  $h_r->[$i]);
+	
+	$msg .= $mail_r->resulttag($id, 1, $h_r->[$i]);
+	
+	for ( 1; $i <= $hend ; ++$i) {
+	    $msg .=  $h_r->[$i];
+	}
+	
 	for ($i = $bbegin; $i <= $bend ; ++$i) {
 	    $msg .=  $b_r->[$i];
 	}
@@ -819,7 +1063,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR021: cannot send to $sent because $@ \n"; 
+	    print $logfh "ERROR704: cannot send to $sent because $@ \n"; 
 	}
     }
 
@@ -827,11 +1071,27 @@ sub apply {
 	# use the mailer to sent it.
 	print $logfh "RULE $id sendmail to $sentm  for $mailnumber ...\n";
 
+	if ($rule->{why}) {
+	    &why_info($mail_r, $logfh);
+	}
+	
 	my $msg = '';
+
+	my $i;
 	
 	for ($i = $hbegin; $i <= $hend ; ++$i) {
+	    last if $h_r->[$i] =~ m/^content-type:/i; 
 	    $msg .=  $h_r->[$i];
 	}
+
+	$msg .= $mail_r->traceoutput($id,  $h_r->[$i]);
+	
+	$msg .= $mail_r->resulttag($id, 1, $h_r->[$i]);
+	
+	for ( 1; $i <= $hend ; ++$i) {
+	    $msg .=  $h_r->[$i];
+	}
+	
 	for ($i = $bbegin; $i <= $bend ; ++$i) {
 	    $msg .=  $b_r->[$i];
 	}
@@ -841,7 +1101,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR031: cannot sendmail to $sent because $@ \n"; 
+	    print $logfh "ERROR705: cannot sendmail to $sent because $@ \n"; 
 	}
     }
 
@@ -849,11 +1109,27 @@ sub apply {
 	# we append the thing to the mailbox of the user on this box..
 	print $logfh "RULE $id proc to $proc  for $mailnumber ...\n";
 
+	if ($rule->{why}) {
+	    &why_info($mail_r, $logfh);
+	}
+	
 	my $msg = '';
+
+	my $i;
 	
 	for ($i = $hbegin; $i <= $hend ; ++$i) {
+	    last if $h_r->[$i] =~ m/^content-type:/i; 
 	    $msg .=  $h_r->[$i];
 	}
+
+	$msg .= $mail_r->traceoutput($id,  $h_r->[$i]);
+	
+	$msg .= $mail_r->resulttag($id, 1, $h_r->[$i]);
+	
+	for ( 1; $i <= $hend ; ++$i) {
+	    $msg .=  $h_r->[$i];
+	}
+	
 	for ($i = $bbegin; $i <= $bend ; ++$i) {
 	    $msg .=  $b_r->[$i];
 	}
@@ -863,7 +1139,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR022: cannot proc to $proc because $@ \n"; 
+	    print $logfh "ERROR706: cannot proc to $proc because $@ \n"; 
 	}
     }
 
@@ -872,6 +1148,10 @@ sub apply {
 	# we append the thing to the mailbox of the user on this box..
 	print $logfh "RULE $id code for $mailnumber ...\n";
 
+	if ($rule->{why}) {
+	    &why_info($mail_r, $logfh);
+	}
+	
 	my $codeline = 'sub { ' . $code . '};' ;
 
 	eval {
@@ -881,7 +1161,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR088: cannot code because $@ \n"; 
+	    print $logfh "ERROR707: cannot code because $@ \n"; 
 	}
 
 	++$cnr;
@@ -917,6 +1197,10 @@ sub apply {
 	# we append the thing to the mailbox of the user on this box..
 	print $logfh "RULE $id copy to $copy  for $mailnumber ...\n";
 
+	if ($rule->{why}) {
+	    &why_info($mail_r, $logfh);
+	}
+	
 
 	# we use the lists thing her. build in that path from bottem to top, then create_directory it ...
 
@@ -978,16 +1262,16 @@ sub apply {
 
 	my $num = $lastnode->get_last_number($tcur);
 
-	my $retwrite =  $lastnode->writefile($tcur,
-					     $num,
-					     $mail_r,
-					     $logfh,
-					     $dirlist->{sourcemailsystem} # as flag ...
-	    );
+	my $retwrite =  $lastnode->writefile_clean($tcur,
+						   $num,
+						   $mail_r,
+						   $logfh,
+						   $dirlist->{sourcemailsystem}, # as flag ...
+	     [  $mail_r->traceoutput($id, '') , $mail_r->resulttag($id, 1, '') ] );
 
 	if ($retwrite != 0) {
 	    # ups ... what to do ? spell it out ..
-	    print "ERROR023: error in writefile for $copy  for $mailnumber ... \n"; 
+	    print "ERROR708: error in writefile for $copy  for $mailnumber ... \n"; 
 	}
     }
 
@@ -1000,7 +1284,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR088: cannot newrule because : $@ \n"; 
+	    print $logfh "ERROR709: cannot newrule because : $@ \n"; 
 	}
     }
 
@@ -1017,32 +1301,34 @@ sub apply {
 
 
 
+sub why_info {
 
-sub thunder_to_thunder_files {
-    # we are the helper for thunder to thunder copy...
-    # thi is also ok for seamonkey - no diffrence on this level
-    # a one file to one file only on base of metadata as target
-    # and sourcepath ...
-    my $self = shift ;
-    my $ofh = shift;
-    my $t = shift ;
-    my $s = shift ;
+    my $a_r = shift;
 
-    my $ret = 0;
+    my $log = shift;
     
-    my $target = $t . '/' . $self->{'targetmeta'};
+    my $from = "From: empty\n";
 
-    my $source = $s . '/' . $self->{'sourcepath'} ;
-    
-    $ret = print $ofh "copycat " . $source . " to " . $target .  "\n" ;
-    if (!$ret) {
-	print "ERROR158: cannot write to copycat output.\n";
-	return 1;
+    my $to = "To: empty\n";
+
+    my $subject = "Subject: empty\n";
+
+    my $i ;
+    for ($i = $a_r->{hstart} ; $i < $a_r->{hend}; ++$i) {
+	if ($a_r->{text}->[$i] =~ m/^From: /) {
+	    $from = $a_r->{text}->[$i];
+	}
+	if ($a_r->{text}->[$i] =~ m/^To: /) {
+	    $to = $a_r->{text}->[$i];
+	}
+	if ($a_r->{text}->[$i] =~ m/^Subject: /) {
+	    $subject = $a_r->{text}->[$i];
+	}
     }
 
-    $ret = &catit($ofh, $source, $target);
-    
-    return $ret;
+    print $log "    " . $from
+	.  "    " . $to
+	.  "    " . $subject ;
 }
 
 # class methods are in here 
@@ -1105,7 +1391,6 @@ sub sentmailto {
 
     # i do a separate io here to give the proc the chance to do its thing ...
     print $fh "\n";
-    print $fh ".\n";
     
     close $fh;
 }
@@ -1284,18 +1569,22 @@ sub set_lasterg {
 sub factory {
     my $rfh = shift;
 
+    my $rflnr = shift;
+
     my $r_r = shift;
 
     my $fname = shift;
 
     my $level = 0;
     
-    &load_rules_file($rfh, $r_r, $level + 1, $fname);
+    &load_rules_file($rfh, $rflnr, $r_r, $level + 1, $fname);
 
 }
 
 sub load_rules_file {
     my $rfh = shift;
+
+    my $rflnr = shift;
 
     my $r_r = shift;
 
@@ -1314,21 +1603,29 @@ sub load_rules_file {
     my $lastand = 0;
 
     while (<$rfh>) {
-	if ($inrule == 1 && m:^[\s]*ENDRULE:) {
-	    $ruletext .= $_;
-	    my $r = new MailTransferRule($lastand, $ruletext, $r_r, $level, $fname);
+	++$rflnr;
 
-	    push @{$r_r}, $r;
+	next if m:^[\s]*$:;
 
-	    $lastrule = $r;
+	next if m:^[\s]*#:; # kill all comments only lines
 	
+	if ($inrule == 1 && m:^[\s]*ENDRULE:i) {
+	    $ruletext .= $_;
+	    my $r = new MailTransferRule($lastand, $ruletext, $r_r, $level, $fname, $rflnr);
+
+	    if ($r->{store} == 1) {
+		push @{$r_r}, $r;
+
+		$lastrule = $r;
+	    }
+	    
 	    $inrule = 0;
 
 	    $lastand = 0;
 	    next;
 	}
 
-	if ($inrule == 0 && m:^[\s]*INCLUDE[\s]+([^\s]+):) {
+	if ($inrule == 0 && m:^[\s]*INCLUDE[\s]+([^\s]+):i) {
 	    my $pm = $1;
 
 	    if (-f $pm) {
@@ -1336,9 +1633,36 @@ sub load_rules_file {
 
 		my $fh;
 		if (open($fh, $pm)) {
-		    &load_rules_file($fh, $r_r, $level + 1, $pm);
+		    &load_rules_file($fh, 0, $r_r, $level + 1, $pm);
 
 		    close $fh;
+		} else {
+		    print "ERROR710: include not readable in $fname line $rflnr\n$_\n" . $pm . "\nthis is an error.\n";
+		    exit(1);
+		}
+	    } elsif (-f $::basedirs[0] . '/' . $pm) {
+		# we have a single file in...
+
+		my $fh;
+		if (open($fh, $::basedirs[0] . '/' . $pm)) {
+		    &load_rules_file($fh, 0, $r_r, $level + 1, $::basedirs[0] . '/' . $pm);
+
+		    close $fh;
+		} else {
+		    print "ERROR711: include not readable in $fname line $rflnr\n$_\n" . $::basedirs[0] . '/' . $pm . "\nthis is an error.\n";
+		    exit(1);
+		}
+	    } elsif (-f $::basedirs[1] . '/' . $pm) {
+		# we have a single file in...
+
+		my $fh;
+		if (open($fh, $::basedirs[1] . '/' . $pm)) {
+		    &load_rules_file($fh, 0, $r_r, $level + 1, $::basedirs[1] . '/' . $pm);
+
+		    close $fh;
+		} else {
+		    print "ERROR712: include not readable in $fname line $rflnr\n$_\n" . $::basedirs[1] . '/' . $pm . "\nthis is an error.\n";
+		    exit(1);
 		}
 	    } elsif (-d $pm) {
 		# we have a dir of rules in...
@@ -1360,25 +1684,109 @@ sub load_rules_file {
 			    my $fh;
 
 			    if (open($fh, $f)) {
-				&load_rules_file($fh, $r_r, $level + 1, $f);
+				&load_rules_file($fh, 0, $r_r, $level + 1, $f);
 				close $fh;
+			    } else {
+				print "ERROR713: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+				exit(1);
 			    }
+			} else {
+			    print "ERROR714: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+			    exit(1);
 			}
 		    }
+		} else {
+		    print "ERROR715: include directory not readable in $fname line $rflnr\n$_\n$pm\nthis is an error.\n";
+		    exit(1);
 		}
-	    }
+	    } elsif (-d $::basedirs[0] . '/' . $pm) {
+		# we have a dir of rules in...
+		my $dh;
 
+		if (opendir($dh, $::basedirs[0] . '/' . $pm)) {
+		    my @f =  readdir($dh);
+
+		    closedir($dh);
+
+		    @f = sort @f;
+		    
+		    foreach my $rfile (@f) {
+			next if $rfile !~ m:\.rule$:;
+			
+			my $f = $::basedirs[0] . '/' .$pm . '/' . $rfile;
+
+			if (-f $f) {
+			    my $fh;
+
+			    if (open($fh, $f)) {
+				&load_rules_file($fh, 0, $r_r, $level + 1, $f);
+				close $fh;
+			    } else {
+				print "ERROR716: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+				exit(1);
+			    }
+			} else {
+			    print "ERROR717: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+			    exit(1);
+			}
+		    }
+		} else {
+		    print "ERROR718: include directory not readable in $fname line $rflnr\n$_\n" . $::basedirs[0] . '/' . $pm . "\nthis is an error.\n";
+		    exit(1);
+		}
+	    } elsif (-d $::basedirs[1] . '/' . $pm) {
+		# we have a dir of rules in...
+		my $dh;
+
+		if (opendir($dh, $::basedirs[1] . '/' . $pm)) {
+		    my @f =  readdir($dh);
+
+		    closedir($dh);
+
+		    @f = sort @f;
+		    
+		    foreach my $rfile (@f) {
+			next if $rfile !~ m:\.rule$:;
+			
+			my $f = $::basedirs[1] . '/' .$pm . '/' . $rfile;
+
+			if (-f $f) {
+			    my $fh;
+
+			    if (open($fh, $f)) {
+				&load_rules_file($fh, 0, $r_r, $level + 1, $f);
+				close $fh;
+			    } else {
+				print "ERROR719: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+				exit(1);
+			    }
+			} else {
+			    print "ERROR720: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+			    exit(1);
+			}
+		    }
+		} else {
+		    print "ERROR721: include directory not readable in $fname line $rflnr\n$_\n" . $::basedirs[1] . '/' . $pm . "\nthis is an error.\n";
+		    exit(1);
+		}
+	    } else {
+		# ups. we have an include that does not work here
+
+		print "ERROR722: include is not possible for $fname line $rflnr\n$_\nthis is an error.\n";
+		exit(1);
+	    }
+	    
 	    next;
 	}
 	
 	
-	if ($inrule == 0 && m:^[\s]*RULE[\s]+:) {
+	if ($inrule == 0 && m:^[\s]*RULE[\s]+:i) {
 	    $ruletext = $_;
 	    $inrule = 1;
 	    next;
 	}
 
-	if ($inrule == 0 && m:^[\s]*AND[\s]*$:) {
+	if ($inrule == 0 && m:^[\s]*AND[\s]*$:i) {
 	    if ($lastrule ne '') {
 		$lastrule->{stop} = 0;
 		$lastand = 1;
@@ -1390,6 +1798,12 @@ sub load_rules_file {
 	    $ruletext .= $_;
 	    next;
 	}
+
+
+	# ups. something but not known in this rulefile ...
+
+	print "ERROR723: unknown found in rulefile $fname line $rflnr\n$_\nthis is an error.\n";
+	exit(1);
     }
 
     return 0;

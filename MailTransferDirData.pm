@@ -1098,7 +1098,9 @@ sub writefile {
     my $log = shift ;
 
     my $flags = shift ; # if we have a slypheed in ...
-    
+
+    my $tags = shift; # can be undefined in most cases... 
+
     my $ret = 0;
 
     my $fh;
@@ -1152,12 +1154,6 @@ sub writefile {
 
     my $lines = 0;
 
-    my $text = $a_r->{text};
-
-    my $start = $a_r->{hstart};
-
-    my $end = $a_r->{bend};
-    
     if ($text->[$start] !~ m/From /) {
 	# we have an old mail file in, add the magic from line ...
 	$ret = print $fh $p . $fromline;
@@ -1170,8 +1166,111 @@ sub writefile {
 
     $p = '';
     my $nlines = 0;
+
     eval {
-	$nlines = $a_r->write($fh);
+	$nlines = $a_r->write($fh, $tags);
+    };
+
+    if ($@) {
+	close $fh;
+	print $log "ERROR164: cannot write in writefile line $lines .. $num \n";
+	return 1;
+    }
+
+    $lines += $nlines;
+
+    close $fh;
+
+    print $log "writefile did $lines lines .. $num .\n";
+
+    return 0;
+}
+
+sub writefile_clean {
+    # helper. we have a synthetic file to create
+    my $self = shift;
+    
+    # mail is in the array per ref, log is in fh ..
+    my $targetdir = shift;
+
+    my $num = shift;
+
+    my $a_r = shift;
+
+    my $log = shift ;
+
+    my $flags = shift ; # if we have a slypheed in ...
+
+    my $tags = shift; # can be undefined in most cases... 
+
+    my $ret = 0;
+
+    my $fh;
+
+    my $p = '';
+    
+    if ( -d $targetdir ) {
+	if ($flags eq 'sylpheed') {
+	    my $targetfile = $targetdir . '/' . $num;
+
+	    if (!open ($fh, '>' . $targetfile)) {
+		print $log "ERROR174: writefile  mailfile $targetfile .. $num ...\n";
+		return 1;
+	    }
+	} elsif ($flags eq 'claws-mail') {
+	    my $targetfile = $targetdir . '/' . $num;
+
+	    if (!open ($fh, '>' . $targetfile)) {
+		print $log "ERROR180: writefile  mailfile $targetfile .. $num ...\n";
+		return 1;
+	    }
+	} else {
+	    my $numfilled = sprintf("%08d",$num);
+
+	    my $targetfile = $targetdir . '/mail' . $numfilled . '.file';
+
+	    if (!open ($fh, '>' . $targetfile)) {
+		print $log "ERROR160: writefile  mailfile $targetfile .. $num ...\n";
+		return 1;
+	    }
+	}
+    } else {
+	# append to target, its a file in fact ...
+	my $targetfile = $targetdir;
+
+	$ret = print $log "append to file $targetfile ...\n";
+	if (!$ret) {
+	    print "ERROR161: cannot write to splitit .. $num output.\n" if $self->{'verbose'};
+	    return 1;
+	}
+
+	if (-s $targetfile) {
+	    $p = "\n";
+	}
+
+	if (!open ($fh, '>>' . $targetfile)) {
+	    print $log "ERROR162: writefile appendfile $targetfile .. $num ...\n";
+	    return 1;
+	}
+    }
+
+    my $lines = 0;
+
+   # if ($text->[$start] !~ m/From /) {
+#	# we have an old mail file in, add the magic from line ...
+#	$ret = print $fh $p . $fromline;
+#	++ $lines;
+#	if (!$ret) {
+#	    print $log "ERROR163: cannot write in writefile line $lines .. $num .\n";
+#	    return 1;
+#	}
+ #   }
+
+    $p = '';
+    my $nlines = 0;
+
+    eval {
+	$nlines = $a_r->write($fh, $tags);
     };
 
     if ($@) {

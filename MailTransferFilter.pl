@@ -17,6 +17,15 @@ $cc = 0;
 # our version 
 $version = '1.0.0';
 
+# we do a traceroute for the mail .. no default
+$traceroute = 0; 
+
+# the traceroute prg
+$tracerouteproc = '/usr/bin/traceroute'; 
+
+# and the count of parallel processes
+$traceroutecount = 100;
+
 # some defaults that work normally for me :)
 
 # the prefix if any is given for the target for copy in the mailsystem
@@ -52,9 +61,24 @@ $exact = 0;
 # our pools for writing newrule
 @pools = ();
 
+# our directory to check for pools
 # we need to have access to this directory for loading code modules
 BEGIN {
+    @basedirs = ( "." );
+
+    # the dot to read in the things in currend working directory
     push @INC, ".";
+    
+    my $baseinstall = $0;
+
+    $baseinstall =~ s:[^/]*$::;
+
+    if($baseinstall ne '') {
+	# the relative path to work with filter installed in a
+	# diffrent directory than the working directory
+	push @INC, $baseinstall;
+	push @basedirs , $baseinstall;
+    }
 }
 
 
@@ -101,6 +125,12 @@ if ($ARGV[0] eq '-e') {
     $exact = 1;
 }
 
+$traceroute = 0;
+if ($ARGV[0] eq '-t') {
+    shift;
+    $traceroute = 1;
+}
+
 if ($ARGV[0] eq '-r') {
     shift @ARGV;
     # this is our rules file 
@@ -141,52 +171,90 @@ if (!open ($rfh, $rulesfile)) {
 # we read in the rules. first the settings part
 my $insettings = 0;
 
+my $rflnr = 0;
+
 while (<$rfh>) {
+    ++$rflnr;
   s:[\s]*$::;
   s:^[\s]*::;
   s:^[\s]*#.*::; # kill comments ...
+
+    next if m:^[\s]*$: ;
     
-    if ($insettings == 0 && m:^[\s]*SETTINGS$:i) {
+    if ($insettings == 0 && m:^SETTINGS$:i) {
 	$insettings = 1;
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*MAILSYSTEM[\s]+([\w][\w\-_\d]*)$:i) {
+    if ($insettings == 1 && m:^MAILSYSTEM[\s]+DIRECTORY[\s]+(.*)$:i) {
+	$infile = $1;
+	next;
+    }
+    if ($insettings == 1 && m:^MAILSYSTEM[\s]+([\w][\w\-_\d]*)$:i) {
 	$themailsystem = $1;
 	next;
     }
     
-    if ($insettings == 1 && m:^[\s]*BASEDIRECTORY[\s]+(.*)$:i) {
-	$infile = $1;
-	next;
-    }
     
-    if ($insettings == 1 && m:^[\s]*MAILBOXDIR[\s]+(.*)$:i) {
+    if ($insettings == 1 && m:^MAILBOX[\s]+DIRECTORY[\s]+(.*)$:i) {
 	$mailboxdir = $1;
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*PREFIX[\s]+(.*)$:i) {
+    if ($insettings == 1 && m:^MAILBOX[\s]+KIND[\s]+([\w][\w\-_\d]*)$:i) {
+	$mailboxkind = $1;
+	next;
+    }
+
+    if ($insettings == 1 && m:^PREFIX[\s]+(.*)$:i) {
 	$prefix = $1;
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*SENDMAIL[\s]+(.*)$:i) {
+    if ($insettings == 1 && m:^SENDMAIL[\s]+PROGRAM[\s]+(.*)$:i) {
 	$sendmailproc = $1;
+
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*EAT_INPUT[\s]+([\d]+)$:i) {
+    if ($insettings == 1 && m:^TRACEROUTE[\s]+COUNT[\s]+([\d]+)$:i) {
+	$traceroutecount = (0 + $1);
+	$traceroutecount = $traceroutecount < 2 ? 2 :  $traceroutecount;
+	next;
+    }
+    
+    if ($insettings == 1 && m:^TRACEROUTE[\s]+PROGRAM[\s]+(.*)$:i) {
+	$tracerouteproc = $1;
+	next;
+    }
+
+    if ($insettings == 1 && m:^TRACEROUTE[\s]+([\d]+)$:i) {
+	$traceroute = 0 + $1;
+	next;
+    }
+
+    if ($insettings == 1 && m:^EAT[\s]+INPUT[\s]+([\d]+)$:i) {
 	$eatinput = 0 + $1;
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*EXACT[\s]+([\d]+)$:i) {
+
+    if ($insettings == 1 && m:^CC[\s]+([\d]+)$:i) {
+	$cc = 0 + $1;
+	next;
+    }
+
+    if ($insettings == 1 && m:^EXACT[\s]+([\d]+)$:i) {
 	$exact = 0 + $1;
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*POOL[\s]+(.*)$:i) {
+    if ($insettings == 1 && m:^VERBOSE[\s]+([\d]+)$:i) {
+	$verbose = 0 + $1;
+	next;
+    }
+
+    if ($insettings == 1 && m:^POOL[\s]+(.*)$:i) {
 	my $pool = $1;
 
 	if (-d $pool) {
@@ -198,7 +266,7 @@ while (<$rfh>) {
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*CODE[\s]+(.*)$:i) {
+    if ($insettings == 1 && m:^CODE[\s]+(.*)$:i) {
 	my $p = $1;
 
 	if (-r $p) {
@@ -210,15 +278,17 @@ while (<$rfh>) {
 	next;
     }
 
-    if ($insettings == 1 && m:^[\s]*MAILBOXKIND[\s]+([\w][\w\-_\d]*)$:i) {
-	$mailboxkind = $1;
-	next;
-    }
-
-    if ($insettings == 1 && m:^[\s]*ENDSETTINGS$:i) {
+    if ($insettings == 1 && m:^ENDSETTINGS$:i) {
 	$insettings = 2;
 	last;
     }
+
+    # if we get here something is wrong with settings ...
+
+    print "ERROR089: settings contains unknown things in line $rflnr :\n$_\nThis is an Error ...\n";
+
+    exit(1);
+    
 }
 
 if ($insettings == 0) {
@@ -279,7 +349,7 @@ if ($mailboxkind eq 'mbox'
     exit (1);
 }
 
-&MailTransferRule::factory ( $rfh , \@rules , $rulesfile);
+&MailTransferRule::factory ( $rfh, $rflnr, \@rules , $rulesfile);
 
 close $rfh;
 
@@ -295,8 +365,15 @@ if (!open ($log, ">>$logfile")) {
 
 # here we now do the include if any is in.
 # so you have full access to dirlist and to rules and the rest is up to you
-if (-r $inc ) {
-    require $inc;
+
+if ($inc ne '') {
+    if (-r $inc ) {
+	require $inc;
+    } else {
+	print "ERROR014: cannot open $inc for including code via require .. \n" if $verbose;
+    exit (1);
+
+    }
 }
 
 # do we have any rules ? 
@@ -323,7 +400,7 @@ print $log "Start Rulefile is $rulesfile with " . ( $#rules + 1) . " rules \n";
 @sortedrules = sort { $a->{id} <=> $b->{id} } @rules;
 
 foreach my $sr (@sortedrules) {
-    print $log "have rule " . $sr->{id} . " " . $sr->{level} . " " . $sr->{filename} . "\n";
+    print $log "have rule " . $sr->{id} . " in level " . $sr->{level} . " for file " . $sr->{filename} . " and line " . $sr->{line} . "\n";
 }
 
 # we can now do the filter for every parameter on the line ...
@@ -500,6 +577,96 @@ sub splitit_and_filter {
 	print $logfh "File scanned for mails, found " . ($#$mail_r + 1 ) . " mails ..\n";
 
 	if ( $#$mail_r > -1 ) {
+	    if ($traceroute) {
+
+		my $dh;
+		
+		opendir ($dh, ".");
+
+		my @fs = readdir($dh);
+
+		closedir($dh);
+
+		foreach my $trc (@fs) {
+		    if ($trc =~ m:^\.mailfilter_trc_[\d]+\.trc$:) {
+			unlink $trc;
+		    }
+		}
+			
+		my $tracescript = '#!/bin/bash ' . "\n";
+
+		my $lnr = 1;
+		for (my $k = 0; $k <= $#$mail_r; ++$k) {
+		    my $f_r = $mail_r->[$k];
+
+		    next if $f_r->{hend} == -1 ; # ups in last line of emptyness
+		
+		    next if $f_r->{hend} == undef ; # ups in last line of emptyness
+
+		    my $trout = '.mailfilter_trc_' . ($k + 0) . '.trc';
+
+		    $tracescript .= '# tr ' . ($k + 0) . "\n";
+		    
+		    my $t = $f_r->gen_or_reuse_traceroute($trout, $tracerouteproc, $traceroute);
+
+		    $tracescript .= $t . "\n";
+		    
+		    if ($t =~ m:nohup[\s]:) {
+			$lnr++;
+			$tracescript .= "wait\n" if ($lnr % $traceroutecount) == 0;
+		    }
+		}
+
+		$tracescript .= "\nwait\nexit 0\n\n";
+		
+		my $ts = ".mailfilter_traceroute_" . $$ . ".sh";
+		my $fh ;
+
+		open($fh, "> " . $ts) ;
+
+		
+		print $fh $tracescript;
+
+		close $fh;
+
+		my $tcmd = '/bin/bash ' . $ts . ' ';
+		
+		my $ret = system $tcmd;
+
+		if ($ret == 0) {
+		    
+		    for (my $k = 0; $k <= $#$mail_r; ++$k) {
+			my $f_r = $mail_r->[$k];
+
+			next if $f_r->{hend} == -1 ; # ups in last line of emptyness
+		
+			next if $f_r->{hend} == undef ; # ups in last line of emptyness
+			
+			next if $f_r->skip_traceroute == 0;
+
+			eval {
+			    $f_r->load_traceroute;
+			};
+		    }
+		}
+
+		# we now delete the scritp ..
+		unlink $ts;
+	    } else {
+		# we have no traceroute to do, 
+		# but if we have a traceroute in the mail 
+		# from a filter before we use it
+		for (my $k = 0; $k <= $#$mail_r; ++$k) {
+		    my $f_r = $mail_r->[$k];
+
+		    next if $f_r->{hend} == -1 ; # ups in last line of emptyness
+		
+		    next if $f_r->{hend} == undef ; # ups in last line of emptyness
+
+		    $f_r->gen_or_reuse_traceroute( ' ', $tracerouteproc, $traceroute);
+		}
+	    }
+	    
 	    for (my $k = 0; $k <= $#$mail_r; ++$k) {
 		my $f_r = $mail_r->[$k];
 
@@ -573,7 +740,14 @@ sub filter_one_mail {
 	return 1;
     }
 
+    ++$gcnt;
 
+    # print "vorher " . $gcnt . "\n";
+    
+    # $a_r->do_traceroute();
+    
+    # print "nachher " . $gcnt . "\n";
+    
     # we rest the global erg to 0
     &MailTransferRule::set_lasterg( 0 );
     
@@ -584,14 +758,6 @@ sub filter_one_mail {
     # dirlist
     # actual number of the mail
 
-    my $text = $a_r->{text};
-
-    my $hstart = $a_r->{hstart};
-
-    
-    my $bstart = $a_r->{bstart};
-    my $bend = $a_r->{bend};
-    
     foreach my $rule (@{$r}) {
 	my ($ret,$stopit) = $rule->apply($a_r,
 					 $log, 
