@@ -22,6 +22,7 @@ This contains small chepters with these headings
 - Pools
 - How to adjust things
 - How to handle errrrrrroorrrs  - ups ...
+- My private collection of rules ... 
 - What is that vanilla thing ?
 - Restrictions
 - History
@@ -40,24 +41,25 @@ Then create a working directory, for this we use a t here.
 
 Copy all scripts to the t directory.
 
-> ls
--rw-rw-r--. 1 ar ar 38004  1. Apr 18:01 MailTransferDirData.pm
--rw-rw-r--. 1 ar ar  3359  1. Apr 18:01 MailTransferDirListClaws.pm
--rw-rw-r--. 1 ar ar  4300  1. Apr 18:01 MailTransferDirListEvolution.pm
--rw-rw-r--. 1 ar ar  3895  1. Apr 18:01 MailTransferDirListKmail.pm
--rw-rw-r--. 1 ar ar  3220  1. Apr 18:01 MailTransferDirListMutt.pm
--rw-rw-r--. 1 ar ar 29467  1. Apr 18:01 MailTransferDirList.pm
--rw-rw-r--. 1 ar ar  5840  1. Apr 18:01 MailTransferDirListSeamonkey.pm
--rw-rw-r--. 1 ar ar  3298  1. Apr 18:01 MailTransferDirListSylpheed.pm
--rw-rw-r--. 1 ar ar  5913  1. Apr 18:01 MailTransferDirListThunderbird.pm
--rw-rw-r--. 1 ar ar  3312  1. Apr 18:01 MailTransferDirListVanilla.pm
--rw-rw-r--. 1 ar ar  2754  1. Apr 18:01 MailTransferExec.pl
--rw-rw-r--. 1 ar ar 12523  1. Apr 18:01 MailTransferFilter.pl
--rw-rw-r--. 1 ar ar  3156  1. Apr 18:01 MailTransferGen.pl
--rw-rw-r--. 1 ar ar  2052  1. Apr 18:01 MailTransferMail.pm
--rw-rw-r--. 1 ar ar  2332  1. Apr 18:01 MailTransferMatch.pm
--rw-rw-r--. 1 ar ar 26006  1. Apr 18:01 MailTransferRule.pm
--rw-rw-r--. 1 ar ar  4117  1. Apr 18:01 MailTransferScan.pl
+> ls -l
+  -rw-rw-r--.  1 ar ar 40162 13. Apr 22:24 MailTransferDirData.pm
+  -rw-rw-r--.  1 ar ar  3359 12. Apr 00:10 MailTransferDirListClaws.pm
+  -rw-rw-r--.  1 ar ar  4300 12. Apr 00:10 MailTransferDirListEvolution.pm
+  -rw-rw-r--.  1 ar ar  3895 12. Apr 00:10 MailTransferDirListKmail.pm
+  -rw-rw-r--.  1 ar ar  3220 12. Apr 00:10 MailTransferDirListMutt.pm
+  -rw-rw-r--.  1 ar ar 29467 12. Apr 00:10 MailTransferDirList.pm
+  -rw-rw-r--.  1 ar ar  5840 12. Apr 00:10 MailTransferDirListSeamonkey.pm
+  -rw-rw-r--.  1 ar ar  3298 12. Apr 00:10 MailTransferDirListSylpheed.pm
+  -rw-rw-r--.  1 ar ar  5913 12. Apr 00:10 MailTransferDirListThunderbird.pm
+  -rw-rw-r--.  1 ar ar  3312 12. Apr 00:10 MailTransferDirListVanilla.pm
+  -rw-rw-r--.  1 ar ar  2754 12. Apr 00:10 MailTransferExec.pl
+  -rwxr-x---.  1 ar ar 17963 16. Apr 23:23 MailTransferFilter.pl
+  -rw-rw-r--.  1 ar ar  3156 12. Apr 00:10 MailTransferGen.pl
+  -rw-rw-r--.  1 ar ar 10867 14. Apr 21:26 MailTransferMail.pm
+  -rw-rw-r--.  1 ar ar  3061 15. Apr 22:50 MailTransferMatch.pm
+  -rw-rw-r--.  1 ar ar 37001 15. Apr 23:15 MailTransferRule.pm
+  -rw-rw-r--.  1 ar ar  4117 12. Apr 00:10 MailTransferScan.pl
+...
 
 Should look similar like this (numbers can chance ).
 
@@ -252,17 +254,17 @@ Ok. You use one of these. Then you are in.
 
 If you use one of these you are out ( but you can use still a similar ):
 
-geary - cannot be used wihtout an imap server - which i dont use on my system.
+geary - cannot be used wihtout an imap server - which I dont use on my system.
 
 mailspring - did not made it on my box after starting.
 
 mulberry - did not start on my box (perhaps a 2007 x86 is simply outdated)
 
-hiri - works only with a microsoft mail server as far as i can say
+hiri - works only with a microsoft mail server as far as I can say
 
 zimbra - did not start for my user after installation.
 
-So i dont support systems that cannot run on my box.
+So I dont support systems that cannot run on my box.
 
 End of story.
 --------------------------------------------
@@ -347,13 +349,21 @@ So 11. Feb 21:19:34 CET 2018
 
 Ok, thats not so much here ..
 
-We have a header. Its from line e
+It was done by mutt and i used the date command as source, then mailed it
+to me on my box (and yes, i use internal a network named alphaset.de , but
+this is simply internal for my behind my linux nat ...)
 
+We have a header. Its from line 
+
+###begin
 From root@hydra.alphaset.de  Sun Feb 11 21:19:34 2018
+###end
 
 to line
 
+###begin
 Content-Transfer-Encoding: 7bit
+###end
 
 You see there is no empty line in - no line with no text at all ...
 
@@ -364,7 +374,9 @@ Later more about this ...
 
 The body then contains only one line - its 
 
+###begin
 So 11. Feb 21:19:34 CET 2018
+###end
 
 Again there is an empty line after this - its technically not needed, but
 its normally always in.
@@ -373,8 +385,9 @@ This is one mail - you have a lot of technical stuff in.
 
 For the rest we use the term tag for a thing in the header that holds
 the information.
-The tag is starting at the first column with the name - the name ends with a : and there is
-no space inside. The name of the tag in the above mail is then one of
+
+The tag is starting at the first column with the name - the name ends with a : and
+there is no space inside. The name of the tag in the above mail is then one of
 
 - X-Mozilla-Status
 - X-Mozilla-Status2
@@ -396,8 +409,19 @@ You have after the : till the next tag the content of the tag.
 The content can be spred over multiple lines.
 In that case the lines are starting with spaces.
 
-You have now of course the most interesting tags with To, From, Subject and sometimes Cc in.
-The rest can help to identify not wanted mails, but the basic info is in that four tags.
+Here we have on
+
+###begin
+Received: (from root@localhost)
+	by hydra.alphaset.de (8.15.2/8.15.2/Submit) id w1BKJYtx005340
+	for ar; Sun, 11 Feb 2018 21:19:34 +0100
+###end
+
+You have now of course the most interesting tags with To, From, Subject and
+sometimes Cc in.
+
+The rest can help to identify not wanted mails, but the basic info
+is in that four tags.
 
 Your mails are always holding text - its visible with a text editor.
 
@@ -431,6 +455,42 @@ Its a file in /var/mail or /var/spool/mail or /usr/mail .....
 Name is the name of the user.
 
 You can ls the directory and see for yourself.
+
+###begin
+ls -l /var/spool/mail
+
+root@hydra ~]# ls -l /var/spool/mail
+insgesamt 58184
+-rw-rw----. 1 ar           mail  8589556 15. Apr 23:58 ar
+-rw-------. 1 atr          mail 50833556  9. Mär 23:20 atr
+-rw-rw----. 1         1001 mail        0  1. Dez 17:46 BOGUS.atr.bmBw
+-rw-rw----. 1 cassandra    mail        0  3. Dez 21:52 cassandra
+-rw-rw----. 1 cpp11        mail        0  3. Dez 21:47 cpp11
+-rw-rw----. 1 dba          mail        0  3. Dez 21:47 dba
+-rw-rw----. 1 ebay         mail        0 11. Dez 21:21 ebay
+-rw-rw----. 1 fwd          mail        0  3. Dez 21:48 fwd
+-rw-rw----. 1 java         mail        0  3. Dez 21:48 java
+-rw-rw----. 1 javajni      mail        0  3. Dez 21:52 javajni
+-rw-rw----. 1 kshell       mail        0  3. Dez 21:50 kshell
+-rw-rw----. 1 lf           mail        0  3. Dez 21:48 lf
+-rw-rw----. 1 mailtransfer mail        0  4. Feb 21:32 mailtransfer
+-rw-rw----. 1 mkshusr      mail        0  3. Dez 22:00 mkshusr
+-rw-rw----. 1 mm           mail        0  3. Dez 21:48 mm
+-rw-rw----. 1 mkshusr      mail        0  3. Dez 21:51 mmkshusr
+-rw-rw----. 1 oracle       mail        0  3. Dez 21:49 oracle
+-rw-rw----. 1 popdmail     mail        0  3. Dez 21:49 popdmail
+-rw-rw----. 1        13500 mail        0  3. Dez 21:49 qtdemo
+-rw-rw----. 1 rest         mail        0 14. Jan 12:11 rest
+-rw-------. 1 root         root   150459 16. Apr 21:11 root
+-rw-rw----. 1 rpc          mail        0  1. Dez 17:44 rpc
+-rw-rw----. 1 shmlog       mail        0  3. Dez 21:51 shmlog
+-rw-rw----. 1 tuxedo       mail        0  3. Dez 21:51 tuxedo
+-rw-rw----. 1        13001 mail        0  3. Dez 21:50 wildfly
+...
+[root@hydra ~]# 
+###end
+
+So much for my notebook ....
 
 If the mailsystem on the computer has to deliver a mail - you are in
 trouble if your mail reader program use the file too.
@@ -492,8 +552,8 @@ We check a simple one to see how it works.
 Then we set up some additional rules to handle mails you dont want to see.
 
 Here is a first rule file.
-====
 
+###begin
 # settings for the MailFilter 
 SETTINGS
 MAILSYSTEM evolution
@@ -515,10 +575,9 @@ ALWAYS
 SEND ar
 STOP
 ENDRULE
-
 # end of rules
+###end
 
-=====
 
 That was not so hard after all ...
 
@@ -526,7 +585,9 @@ Empty lines are allowed, they are ignored...
 
 First we have a thing that is not used - a comment.
 
+###begin
 # settings for the MailFilter 
+###end
 
 It starts with nothing in the line beside empty space and a # sign.
 It is ignored then what follows the # sign.
@@ -535,7 +596,9 @@ Use them. It helps to understand what and why you did something ...
 
 Next is a 
 
+###begin
 SETTINGS
+###end
 
 That starts the settings info for the filter.
 It has to be the first thing for the starting rule file.
@@ -544,7 +607,9 @@ It has to match an ENDSETTINGS that close the settings.
 
 Next is a mailsystem we use. We have
 
+###begin
 MAILSYSTEM evolution
+###end
 
 in here. You can use yours here - kmail, claws-mail, sylpheed,
 thunderbird, seamonkey. And the naked ones, vanilla for a replacement
@@ -552,7 +617,9 @@ and mutt.
 
 Next is depending to the system you use. The directory with the mails in
 
+###begin
 MAILSYSTEM DIRECTORY /home/ar/.local/share/evolution/mail/local
+###end
 
 Huh. This is tough. But if you see for the thing in howto.txt for the
 transfer you will find also yours there and how it works.
@@ -579,16 +646,22 @@ rest here till it hits your folder.
 
 Next is a prefix we use for dividing the regular mails and the filtered.
 
+###begin
 PREFIX mailfilter
+###end
 
 This is a folder then in the system and created below the MAILSYSTEM DIRECTORY
 in your mail client system.
 Its a plain name - the decorations and helping files are made according
 to the mailsystem you set in by the filter, no need for you to do it.
+If you intend to use multiple filters - use multiple prefix. So you wont
+hurt yourself in parallel writings ...
 
 Last is here 
 
+###begin
 ENDSETTINGS
+###end
 
 which ends the setting.
 
@@ -607,15 +680,16 @@ the simple thing of filtering the lists and be happy with my mails.
 
 So here comes the first rule
 
+###begin
 # list filtered here
 RULE 10
 HEADER 
  users@lists.fedoraproject.org
 COPY lists/fedora
 ENDRULE
+###end
 
-The first thing here is
-RULE 10
+The first thing here is RULE 10
 
 I use a number to identify rules. Its simple and give the thing a
 way to reuse rules to make more ...
@@ -623,45 +697,64 @@ way to reuse rules to make more ...
 The next is a so called match. It makes the rule work only for the mails
 that have the thing in their header.
 
+###begin
 HEADER 
  users@lists.fedoraproject.org
+###end
 
 The magic thing here is the second line, with the single space in front.
+
+
+YES. THERE IS A SINGEL SPACE IN FRONT. Period.
+
+(OK. You can use all a perl is identifiying as a [\s] ... )
 
 It declaires a pattern that has to be fit in the header line that is used.
 
 If you see for your mails you will find a lot of patterns you can use,
 but for the mailing list of fedora this is one of the best of them.
+Simply check in your mailcleint the Source Code option to see the text and
+then check for From: lines and sometimes the Received: lines ..
 
 Next is a thing that states what to do if the mail fits the match.
 
+###begin
 COPY lists/fedora
+###end
 
 We copy that mail to the folder that is in the mailsystem in mailfilter,
 then lists, then fedora.
+
+Technically : the mailsystem directory, then the path that is valid for a folder (!)
+with the naming PREFIX / parameter of copy directve ... (ok. too technical ..)
 
 Yes, the thing is created if you dont have it. No need to create it by yourself.
 
 And yes, sometimes a system needs a little help to recognise that.
 
 For claws-mail and sylpheed a rescan is needed of folders. See the right
-button menu....
+button menu, then renew flders or so ....
 
 For evolution a switch into the directory, then back and then again in is
-needed.
+needed (so called up down up rebuild my index ...).
 
 Thunderbird shows it directly, and mutt and vanilla dont need any help.
 
 The next thing marks the end of the first rule
 
+###begin
 ENDRULE
+###end
 
 So we have the first rule in now. It checks the header of the mail and if
-a pattern match is made successful for the  users@lists.fedoraproject.org
-we make a copy of the mail in the targetet mailsystem in a folder.
+a pattern match is made successful for the
+    users@lists.fedoraproject.org
+we make a copy of the mail in the targetet mailsystem in a folder that is
+in mailfilter, then lists, then fedora.
 
-The next rule is a special one, its the last in the rules i have in.
+The next rule is a special one, its the last in the rules I have in.
 
+###begin
 # last rule. we sent the thing to ar 
 RULE 999999999
 
@@ -669,6 +762,7 @@ ALWAYS
 SEND ar
 STOP
 ENDRULE
+###end
 
 
 We have first a comment in. Ok, thats saying its the last ...
@@ -677,13 +771,10 @@ Then the rule with a high number. A eight time 9 ...
 
 The next is an empty line - no checks so far.
 
-An
-ALWAYS
-states the rule will be done - always.
+An ALWAYS states the rule will be done - always.
 
-Next is a
-SEND ar
-which sends the mail to the account ar mailbox file on the box... by simply using filecopy.
+Next is a SEND ar which sends the mail to the account
+ar mailbox file on the box... by simply using filecopy.
 
 In the case of the box I have made the filter, the mbox is in
 /var/spool/mail
@@ -691,16 +782,12 @@ and the name is the name of the login of my user, ar.
 
 The next is redundand, only to remind you that a rule that is fitting
 eats up the mail normally.
+
 STOP
 
 Ok, so no more processing after that rule.
 
-Again an
-
-ENDRULE
-
-closes the thing.
-
+Again an ENDRULE closes the thing.
 
 
 ------------------------------------------------------------------------
@@ -740,8 +827,11 @@ But it will not filter anything.
 
 OK, so next is the thing you can do with the settings and rules ...
 
+By the way:
+
 The rule file can be used with the -r switch, or the default in $HOME/.mailfilter.rule
 
+Dont forget the . - I tent to HIDE the rules against anybody..
 
 -----------------------------------------------------------------------------
 
@@ -751,6 +841,8 @@ First we simply name the settings and make for every one an example.
 
 I use my setup for my box, its easier for me that way :)
 
+------
+
 MAILSYSTEM a_supported_mailsystem
 
 MAILSYSTEM evolution
@@ -759,22 +851,25 @@ MAILSYSTEM evolution
 
 This is the name of the mailsystem we use to put mails into its folders.
 Its technically needed.
-The default is vanilla. It is a dummy system, ony to hold mails on disk.
 
+The default is vanilla
 
+It is a dummy system, ony to hold mails on disk.
+
+------
 
 MAILSYSTEM DIRECTORY a_directory_path
 
 MAILSYSTEM DIRECTORY /home/ar/vanilla
 
-This is the path to get to the basedirectory for the mailsystem. We need
+This is the path to get to the base directory for the mailsystem. We need
 this to construct the real path to the point where the filter
 starts to make its folders and then put in the mails.
 
 The thing is tricky, its highly depending on the used system.
 See the howto.txt and there for the used mailsystems if you dont know it.
 
-If you cant understand this, make in your mailprogramm a folder where you
+If you cant understand this, make in your mailclient a folder where you
 want to start the filter. Name it in a way its unique ..
 
 Then use the glory search tool of your choice to hit it.
@@ -785,7 +880,7 @@ is then done relative to it...
 
 Default is your home directory and then the subdirectory vanilla.
 
-
+------
 
 MAILBOX DIRECTORY a_path_to_the_mailbox_directory
 
@@ -794,9 +889,11 @@ MAILBOX DIRECTORY /usr/mail
 This is a thing to describe where to copy mails when you use the SEND
 directive. It then takes the path that follows and uses it
 to make the copy of the mail into that file.
-For now only mbox files are supported, i plan to support maildir later ...
+For now only mbox files are supported, I plan to support maildir later ...
 
 Default is /var/spool/mail
+
+------
 
 MAILBOX KIND a_mailsystem_kind
 
@@ -807,10 +904,11 @@ This is the way to say the thing what is the kind of mailboxdir.
 If you have a berkley mbox system - the sendmail way of life - its
 a directory of mbox format files. So mbox is it.
 
-Later on i plan to support the rest...  for now i have only mbox.
+Later on I plan to support the rest...  for now I have only mbox.
 
 Default is mbox
 
+------
 
 PREFIX a_vanilla_folder_name
 
@@ -827,6 +925,7 @@ which can be a bit different, and then puts the file in place...
 
 Default is mailfilter
 
+------
 
 SENDMAIL PROGRAM mailercommandline
 
@@ -838,6 +937,7 @@ the mail into the program (thats the sendmail way of life ... )
 
 Default is /usr/sbin/sendmail -bm -oi
 
+------
 
 TRACEROUTE PROGRAM traceroutecommandline
 
@@ -847,6 +947,8 @@ This is the command line for the traceroute directive. It uses the thing in the
 intermediate script and then the traceroute is done that way.
 
 Default is /usr/bin/traceroute
+
+-------
 
 TRACEROUTE COUNT number
 
@@ -858,16 +960,21 @@ multiple groups then.
 
 Default is 100
 
+------
+
 TRACEROUTE number
 
-TRACEROUTE 1
+TRACEROUTE 2
 
-This is a flag to switch off the traceroute with a 0, switch it on with a 1 and circumvent reuse
-of existing info with a 2.
-The traceroute is off by default, so you only reuse existing traceroute info if any is available.
+This is a flag to switch off the traceroute with a 0, switch it on with a 1
+and circumvent reuse of existing info with a 2.
+The traceroute is off by default, so you only reuse existing traceroute
+info if any is available.
 There is more info about it and the use in the rules in a separate chapter.
 
 Default is 0
+
+------
 
 EAT INPUT a_number
 
@@ -884,6 +991,8 @@ Default is 0
 
 # and only 1 is working for now ... any thing else is as 0
 
+------
+
 
 EXACT a_number
 
@@ -896,25 +1005,37 @@ But its only a hack - so dont use it for mbox files , only for maildir in doubt.
 
 Default is 0
 
+------
+
+
 CC number
+
 CC 1
 
-This is a flag and it switches on with a number other than 0. The filter then creates for every
-mail a file in the working directory with the naming m<mailindex>.txt where the index is from 1
+This is a flag and it switches on with a number other than 0. The filter then
+creates for every
+mail a file in the working directory with the naming m<mailindex>.txt where
+the index is from 1
 for the first mail inthe input to the last one with the highest number.
-If a mail is corrupted and consumend in another it can be that there is a whole in the numbers ..
+If a mail is corrupted and consumend in another it can be that there is a whole
+in the numbers ..
 
 Default is 0
+
+------
 
 
 VERBOSE number
 
 VERBOSE 1
 
-This is a flag to make the filter to do more output. Normally it is a quite thing, only the return code
+This is a flag to make the filter to do more output. Normally it is a quite thing,
+only the return code
 shows the outcome of the processing. But if you set it to 1 or more you get more output.
 
 Default is  0
+
+------
 
 POOL a_pool_directory_path
 
@@ -931,12 +1052,14 @@ that already exists.
 Here we can tell the thing what pool exist ...
 And we can use multple of them to name multiple pools.
 
-In the real life I use a pool for spam rules, one for whitelist, one for blacklist and one for
-mailinglists.
+In the real life I use a pool for spam rules, one for whitelist, one for
+blacklist and one formailinglists.
 
 Default is
 
 # yes, that right, nothing...
+
+------
 
 
 CODE a_perl_code_file
@@ -948,12 +1071,11 @@ The filter can be tailored by using perl code that you write.
 The code is read in just before the real filtering starts, so you have the
 rules and  the target mailsystem already in.
 
-Then i have a & in the matchers to call the code instead to call a program.
+Then I have a & in the matchers to call the code instead to call a program.
 
 Default is
 
 # yes, again its empty.
-
 
 
 -----
@@ -966,7 +1088,7 @@ SETTINGS
 
   MAILSYSTEM thunderbird
   MAILSYSTEM DIRECTORY /home/ar/.thunderbird/o0hd68d2.default/Mail/Local Folders
-  # yes, that IDIOTS realy need spaces in pathnamens .... and have that
+  # yes, that IDIOTS really use spaces in pathnamens .... and have that
   # profile synto thing in ...
 
   MAILBOX DIRECTORY /usr/spool/mail
@@ -979,12 +1101,12 @@ SETTINGS
   # if you have diffrent filters, you can use diffrent prefix in here ...
 
   SENDMAIL PROGRAM mutt
-  # ups. didnt try that, but it can work i think ...
+  # ups. didnt try that, but it can work I think ...
 
   TRACEROUTE PROGRAM traceroute
   # we have the traceroute in there
 
-  TRACEROUTE 1
+  TRACEROUTE 2
   # we do tracerouting ...
 
   EAT INPUT 1
@@ -997,17 +1119,15 @@ SETTINGS
   POOL spamrules
   POOL maggierules
   POOL FBIRULES
-
-  # wow, thats a lot f pools and rules in here ...
-
+  # wow, thats a lot of pools and rules in here ...
 
   CODE myinclude.pl
-  # here i can do some things with the lists and rules set up so far
+  # here I can do some things with the lists and rules set up so far
   # and deliver code to use ...
   
 ENDSETINGS
 
-Did i tell you that you can
+Did I tell you that you can
 - use space and tab to make look it nicer ?
 - use the # thing only on lines of itself, not , no, never, ever ... after
   one of the keywords ? 
@@ -1024,7 +1144,7 @@ Settings
 Endsettings
 
 
-for example ...
+for example ... but I didnt try that ...
 
 -----------------------------------------------------------------------------
 
@@ -1033,18 +1153,22 @@ Making rules
 The dense thing ...
 
 
-A Rule consists of the Startline, the endline and any line between
-has to be empty, a comment or a match or a directive.
+A Rule consists of the startline, the endline and any line between
+has to be empty, a comment, a match or a directive.
 
 The endline is
-ENDRULE
 
-The Startline is one of these four
+###begin
+ENDRULE
+###end
+
+The Startline is one of these four (with two dummy things)
 RULE IDNUMBER
 RULE AUTO
+RULE 
 RULE IDNUMBER EXTENDS IDNUMBEROTHERRULE
 RULE AUTO EXTENDS IDNUMBEROTHERRULE
-RULE 
+RULE EXTENDS IDNUMBEROTHERRULE
 
 A directive is one of these
 ALWAYS
@@ -1062,7 +1186,7 @@ SENDMAIL targetuser
 PROC programcommandline
 CODE perfunctioncodeline 
 
-A traceroutelist is one of these
+A traceroutelist entry is one of these
 WHITELIST
 BLACKLIST
 
@@ -1083,8 +1207,8 @@ AND NOT
 A matchpattern is a perl regular expression or a commandline preceeded by an
 identificator.
 
-The indentificators are
-SPACE for a regular pattern that has to match
+The identificators are
+SPACE ( or better [\s] ) for a regular pattern that has to match
 ! for a pattern that has NOT to match
 / for the commandline
 & for a perlcodeline 
@@ -1095,16 +1219,16 @@ give the full path.
 The patterns are perl regular expressions and must compile as "usual" patterns.
 
 I dont support complex things and taging of matches, so dont overdo it ...
+I plan to add a tag support.. but it is not done...
 
 Perhaps I will extend it some day to do the ignore thing ...
-
 
 -----------------------------------------------------------------------
 The not so dense ....
 
 A rule start with the line
 
-Rule ..
+Rule .. ... ... 
 
 The rest is simple. We want to identify the rule if we need, so a number is in.
 
@@ -1143,6 +1267,7 @@ you put additional things in.
 
 My extend is othen used for lists with multiple input mailadresses. So is
 for example my spam rule one without any match
+
 RULE 1000
 COPY fileter/spam
 ENDRULE
@@ -1152,6 +1277,9 @@ So it will catch nothing at all.
 But in the spamrule pool I use all the time
 rule auto extends 1000
 
+and
+rule extends 1000 ( the dummy auto )
+
 Meaning: I create here a new one, use the rule 1000 as the blueprint and
 put only a specific matcher in ..
 
@@ -1159,6 +1287,7 @@ This is called some times object orientated way of life ... I call it practical,
 but this is your decision if you do it this way.
 
 The last is with numbers.
+
 rule 2000 extends 1000
 
 Ok. No auto for it, so it has the number 2000 this time...
@@ -1173,7 +1302,7 @@ endrule ( or ENDRULE ... )
 
 Many people like or need it shorter, but I resist here to use the
 programers way of life... () [] {} or whatever you normally use.. its not
-user friendly at all 
+user friendly at all. 
 
 Use an editor to cut and paste if its too much to type ...
 
@@ -1187,7 +1316,8 @@ on my linux box the maildirectory is in /var/spool/mail and has the form of
 mbox format files. Every file is named as the username (and most likely
 the home directory for the user ).
 
-I can also use multiple SEND in here, no problem.
+I can also use multiple SEND in here, no problem ( well, some system need a
+right setup then with suid or gid bits ..).
 
 The SENDMAIL does a real mail sending, so in theory one can route the mails
 even to another box (well, and if you are a bad person even spam that way ..)
@@ -1232,13 +1362,14 @@ NEVER can still be better if you decide to make an extend.
 But then ... you need to switch the NEVER off...
 
 So we have also a
+
 NOT NEVER
 
-This is a rare thing, i dont use it by myself ... but you CAN use it ...
+This is a rare thing, I dont use it by myself ... but you CAN use it ...
 
 The WHY is to get some info in the logfile ...
 
-# did i say logfile ? hm ...
+# did I say logfile ? hm ...
 
 We have normally for a rule if it hits that it also STOP the processing.
 
@@ -1248,7 +1379,7 @@ a hit in its finished for that mail. Next mail please.
 Sometimes we do still want the rest rules to be processed.
 So we have the STOP explicitly to show we stop here, but its not needed...
 
-But then : if we want to proceed further we have to switch that stop off..
+But then: if we want to proceed further we have to switch that stop off..
 
 So we have the
 
@@ -1297,7 +1428,7 @@ Now its time for the match thing.
 A rule is processed by checking if its a always , a never and then if it has
 matches. If it has neither of these, its skipped and so the next rule is used.
 
-Its done in the reasonable from 1 to end way in numeric order.
+Its done in the reasonable way from 1 to end way in numeric order.
 
 I use normally 99999999 for my end .
 
@@ -1406,7 +1537,7 @@ So one of it is enough and you hit.
 
 Sometimes this is handy.
 
-If I have multiple info letters from different shops for hardware i can combine
+If I have multiple info letters from different shops for hardware I can combine
 like this
 
 header
@@ -1434,7 +1565,8 @@ header
  Cc: anton.rommerskirchen@internetprovider.net
 
 
-This will hit as a rule only if both is hit for the mail.
+This will hit as a rule only if both is hit for the mail. Can be in different lines
+of course then ... or heder and body .. or ...
 
 One is not enough.
 
@@ -1526,14 +1658,14 @@ The match then checks for the return code.
 - a 1 means no good.
 - a not 1 (technically 0 and the rest beside 1 ) means ok.
 
-If you made an error in the program return a 1 if you want to make no
+If you made an error in the program return a 0 if you want to make no
 error in the filter - the mail will survive that rule, but its better then to
 wreck in the filter and never see it again.
 
 Last thing:
-You can use perl code - there is asimple example in codetest.rule and
+You can use perl code - there is a simple example in codetest.rule and
 codetest.pl that shows how its used.
-The thingt is up to you and your perl experiance ...
+The thing is up to you and your perl experiance ...
 
 The rest is now to play with this a bit and after you think you have it
 to make your rules.
@@ -1613,10 +1745,10 @@ Rules to filter mails you want to see
 
 I use a setup where I have first my list rules in.
 
-The List rules also cover the mails that I HAVE , MUST, ALWAYS and so on
+The list rules also cover the mails that I HAVE TO / MUST / ALWAYS and so on
 see....
 
-So my rules are starting with 10 - a little reseve if needed ...
+So my rules are starting with 10 or so  - a little reseve if needed ...
 
 The next ten or so are lists, the rest till I hit the spam are individual
 mailadresses I dont want to miss..
@@ -1666,7 +1798,7 @@ Thats the tough on.
 
 We talk about spam.
 
-Technical there is no spam.
+Technical - there is no spam.
 
 Every mail is simply without a flag or tag about that when it leaves the sendes
 networkport.
@@ -1678,7 +1810,8 @@ And it fails in the last time about 70 % now.
 OK.
 
 There are so called spamcheckers, but they work mostly on a neutral ruleset.
-No clue about what you really dont want to see.
+No clue about what you really dont want to see ( I mean YOU here , not
+anyone else ..).
 
 Of course all can be extended by you with new info ...
 
@@ -1695,7 +1828,7 @@ rule 1000
 copy filter/spam
 endrule
 
-my real catchers do the work then like this
+My real catchers do the work then like this
 
 rule auto extends 1000
 header
@@ -1783,14 +1916,8 @@ So use it if you think you need it.
 For myself I plan to make some extensions, but not for now, so
 use that thing if you have a check for a mail and its woking...
 
-Perhaps - but not now - I integrate a callback thing and you can do
-it inside of the filter with perl code directly.
-
-But perl is normally not the thing of the day, so if you are a python or
-java guy.. use the program check.
-
-
 -----------------------------------------------------------------------------
+
 Using perl code
 
 You can use perl code in two spots : the match for a line and the rule
@@ -1950,23 +2077,24 @@ valid certificats ...
 If the spammer uses fake domains, and then rotating subject and from and to tags, you
 are in trouble to recognise it . So you can give traceroute a try.
 
-If you activate it with -t flag or with TRACEROUTE 1 in settings the filter
+If you activate it with -t flag or with TRACEROUTE 1 or 2 in settings the filter
 tries to make a traceroute for the candidate mail.
 
 Not every mail is a candidate. If you traceroute all mails ... well, that needs
 a bit more time, more network resources and more trouble with network
 admins who suspects you are a hacker ...
 
-So there are two lsits to circumvent traceroute - the whitelist and the blacklist.
+So there are two lists to circumvent traceroute - the whitelist and the blacklist.
 
 What is traced ?
 
-The candidate has a list of received tags in the header, and the filter checks from the
-last to the first in upward direction for the first one that has a valid external
-ipv6 - which it ignores, a valid whitelist - which it ignores, a valid blacklist - which it ignores
-, or a valid ip v4 which is NOT a locallized on (meaning 10. , 172, 192 and so on networks ... )
+The candidate has a list of received tags in the header, and the filter checks
+from the last to the first in upward direction for the first one that has
+a valid external ipv6 - which it ignores, a valid whitelist - which it ignores,
+a valid blacklist - which it ignores, or a valid ip v4 which is NOT a locallized
+on (meaning 10. , 172, 192.168 and so on networks ... )
 
-Then the found ip v 4 is used for the tracing.
+Then the found ip v4 is used for the tracing.
 
 A little example here:
 
@@ -2006,8 +2134,8 @@ X-Easynet-bounce-key: easynet.es;m.lotto@europe.com;1518205941;28efdda2;
 Envelope-To: <anton.rommerskirchen@gmx.de>
 ===end
 
-This is a spam mail for me - i dont need a EUROMILLION info ... dont play that sick kind of
-game any more ...
+This is a spam mail for me - I dont need a EUROMILLION info ... dont play that
+sick kind of game any more ...
 
 So the filter checks for the header and starts to look for a Received tag.
 
@@ -2027,7 +2155,7 @@ nohup traceroute "184.95.51.179"
 
 will then be executet.
 
-The result is read in into the filter and two  new tags are created with
+The result is read in into the filter and two new tags are created with
 
 X-atrsoftgmbh-mailfilter-result: result=1; ruleid=1000050
 X-atrsoftgmbh-mailfilter-trace: exist=0 ; ruleid=1000050
@@ -2035,9 +2163,9 @@ X-atrsoftgmbh-mailfilter-trace: exist=0 ; ruleid=1000050
 
 Nothing on the trace - the default xx * * * lines are removed ...
 
-Hm. This could be a candidate for a ROUTECOUNT 1 match...
+Hm. This could be a candidate for a ROUTECOUNT 0 match...
 
-Will have NO host info at all, so less than 1 hit for a hostinfo line.
+Will have NO host info at all, so 0 hit for a hostinfo line....
 
 Other example.
 
@@ -2127,12 +2255,13 @@ ENDRULE
 
 In any case :
 
-Sometimes you have to accept your provider does not support traceroute scans - or the target
-is behind a well known official provider behind some trick network ...
+Sometimes you have to accept your provider does not support traceroute scans -
+or the target is behind a well known official provider behind some trick network ...
 
 Thats a case to use the traceroute AND some code stuff in ...
 
 You can use also
+
 ROUTECOUNT number
 
 to make a match (its a hack in this sense, no regular expressions at all ... but works ).
@@ -2146,11 +2275,13 @@ You decide if this is a thing you use.
 
 One last hint.
 
-If you set TRACEROUTE higher than 1 you do the traceroute even if there is traceroute info in.
+If you set TRACEROUTE higher than 1 you do the traceroute even if there is
+traceroute info in.
 
 If you set it to 1 you recycle already existing info - so be sure you know what you want.
 
-I use a 2 in my first account that fetches mails from internet - i dont trust fake traceroute ...
+I use a 2 in my first account that fetches mails from internet - I dont trust
+fake traceroute ...
 
 -------------------------------------------------------------------------------
 
@@ -2166,7 +2297,8 @@ The pool is used in two ways.
 
 One is to get all files in it in when you start the filter.
 
-To do that the pool has to be accessible (ha, what a joke ... of course it is .. ahm, ups ...)
+To do that the pool has to be accessible (ha, what a joke ... of course
+it is .. ahm, ups ...)
 
 Check director rights. Check the working directory for the filter.
 
@@ -2183,7 +2315,7 @@ s is the character s
 
 dot is the character .
 
-number is  a number, can be zero filled # what i use myself !
+number is  a number, can be zero filled # what I use myself !
 
 The last part must be the text rule.
 
@@ -2228,8 +2360,8 @@ INCLUDE spampool
 
 INCLUDE ./royal_casino_rule.rule
 
-First i make the basic work for my spam , then i
-include the pool with all the tiny match rules, and then i have one file with a
+First I make the basic work for my spam , then I
+include the pool with all the tiny match rules, and then I have one file with a
 bastard in at last ...
 
 This is how a pool is used in the filter for reading.
@@ -2351,10 +2483,241 @@ In doubt make a shell wrapper and do the things you have to do.
 
 SEE ALWAYS INTO THE LOG IF THE ERROR IS NEAR ...
 
-# perhaps i make a summary mail and sent it at the end to the master
+# perhaps I make a summary mail and sent it at the end to the master
 of the process, but for now you have to check the log....
 
 For testing : use the -r for a simple rulefile, the -l for a clean logfile.
+
+
+-------------------------------------------------------------------------------
+
+My private collection of rules ... 
+
+If you are a spamer - skip this chapter, it will HURT you ...
+
+
+------
+# spammer rule ... 
+RULE  EXTENDS 1000000
+# definitiv bad guys out
+HEADER
+ hugosoft.deatr
+!^atr@hugosoft\.de
+ENDRULE
+
+The spammer uses the mailardes, but appends it with something ...
+So if it is not exactly the mailadress it is catched and gose to hell ..
+
+------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000 
+HEADER
+ From.*adius.*group
+ENDRULE
+
+The spammer uses a fix from... good for me. simple rule ...
+perhaps today not so cleaver any more...
+
+------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ Subject: .*(anadian.*RX|Sexy Lady sucht)
+ENDRULE
+
+This time the spammer has a fixed subject...
+also not so clever ...
+
+-------
+
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+BODY
+ http.*adult-localsearch.*\.net
+ENDRULE
+
+
+This spamer uses a special http link in the body.
+Bye bye. will never be read again ....
+
+-------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+BODY
+ http.*adult-localsearch.*\.net
+ENDRULE
+
+This spammer sents the mail always to a - real ? - mailadress - but not to me...
+
+I get it by some trick in the target mailserver ...
+
+So no way to stop that at the beginning ...
+
+But now ... never read it again ...
+
+-------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ From: .*@outlook\.com
+AND
+HEADER
+ Cc: .*@gmx\.de
+ENDRULE
+
+This is arelative new one. The spammer uses some - real ? - account on a big
+mail server network, and puts you into a CC ....
+
+Never get that again to read ....
+
+------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ bamboo\.co\.ua
+ENDRULE
+
+
+This was a spammer using in the header all the time this network...
+
+Never see you again ...
+
+------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ @.*biz\.ua
+ENDRULE
+
+A new one. Never had freinds or contacts to ... biz ukraine ? huh...
+
+the traceroute showed it came from a russian provider in real ...
+
+Good - more vodka for me, less for you ...
+
+-----
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ from by to
+ENDRULE
+
+
+This one had a nice trick.
+
+IT dit construct the first received tag manually - no mailer on this planet
+does that... so the thing had always from to by in first ...
+
+Now its the first to went down the toilett....
+
+-------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ From: .*info@atrsoft.de
+AND
+HEADER
+ To: .*info@atrsoft.de
+ENDRULE
+
+
+Nice try. Sent me a mail for my company from ... my company ...
+
+Hah.
+
+Now i have the last laugh about it ... hihi...
+
+-------
+
+RULE  EXTENDS 1000000
+HEADER
+ ^From: .*\.online
+ENDRULE
+
+
+New one. Its one of a douzen or so.. all use a ending domain that is
+MEANINGLESS to me ...
+
+So i now never have to think about it ...
+
+------
+
+RULE  EXTENDS 1000000
+NOT HEADER
+ ^To:
+ENDRULE
+
+
+The famous try to sent a mail to --- no one in ....
+
+If you dont sent it to me ... its not for me ...
+
+------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+  Subject: =\?UTF-8\?B\?SWNoIG3DtmNodGUsIGRhc3MgZHUgZWlucyB2ZXJzdGVoc3TigKY=\?=
+ENDRULE
+
+
+Nice try. I see int he Subject of the mailcleint a text, but it has
+that crab in ... ok, if you dont want to tlk plain ascii to me...
+I wont hear any more ...
+
+-----
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ From:[\s]*$
+ENDRULE
+
+
+Thats another nice one. No From:
+
+If you dont tell me from where you are, I wont listen to you any more...
+
+------
+
+# spammer rule ... 
+RULE  EXTENDS 1000000
+HEADER
+ To:.*@gmx\.de.*@gmx\.de
+!anton.rommerskrichen@gmx.de
+ENDRULE
+
+The last one.
+
+This time a spammer sents to multiple user of a network serve ...
+so i carefully check if its for more than one in TO, then kill it if its
+not exactly for me ...
+
+by by spammer...
+
+
+-------
+
+The rest is rough a replica of one of the prototypes in here. I use the
+traceroute to do the rest and close the path from the spammers official
+sending network to me.
+
+If a mail has no host in the trace --- i put it on the zero list with
+routcount 0 ...
+
+The rest is seeing about the mails for a week or so for the subjects.
+
+I never open a body of them ... dont do that any more ...
+
 
 
 -------------------------------------------------------------------------------
@@ -2389,21 +2752,21 @@ you decide to do it not dirty.
 
 You are a software developer after all ...
 
-So i started to make an analyse and found that most things were at least
+So I started to make an analyse and found that most things were at least
 a problem of the new index thing of my former mailclient.
 
-It had simply changed - and i had not done every upgrade one by one ...
+It had simply changed - and I had not done every upgrade one by one ...
 
-So i got out of sync for the indexing and ...
+So I got out of sync for the indexing and ...
 
 Things became bad.
 
 Very bad.
 
 I lost the ability to do simplest lookups, lost even the possibility
-to select mails in folders that i had still in the main gui ...
+to select mails in folders that I had still in the main gui ...
 
-Thats bad. I needed not the "make all folders like in the old " thing, i
+Thats bad. I needed not the "make all folders like in the old " thing, I
 needed a total clean export and import.
 
 But there is none - no one seems to like an neutral export at all ..
@@ -2411,20 +2774,20 @@ But there is none - no one seems to like an neutral export at all ..
 Everyone likes an import if - its an outdated and long gone version
 for the others ... haha ... nice thinking...
 
-So i began the scan thing.
+So I began the scan thing.
 
 First with find - but using this in a shell script was far from good
-so i switched to perl and then to the perl find.
+so I switched to perl and then to the perl find.
 
-OK. I had made some steps, and i realized that it would be better to do it
+OK. I had made some steps, and I realized that it would be better to do it
 in several steps, not one.
 
 I had first the scan of the old files, then the  decide what to do thing,
 the creation of new directories ...
 
-So i came up with a scanner.
+So I came up with a scanner.
 
-This was a thing that worked nearly ok - found after some debugging that i
+This was a thing that worked nearly ok - found after some debugging that I
 had still an mbox file in my system - its a maildir based today...
 
 So much for theory.
@@ -2437,59 +2800,60 @@ done, only a new text file ...
 
 This gave me the option to do the thing with the normalized names.
 
-And then a colleague of mine came with "oh, and i want to migrate then to ...."
+And then a colleague of mine came with "oh, and I want to migrate then to ...."
 
 Of course not MY favorite one ...
 
-So i decided to make the executor work for that too.
+So I decided to make the executor work for that too.
 
-After some playing with it i had found nearly everthing ok ...
+After some playing with it I had found nearly everthing ok ...
 
 Had made my experiance with evolution - and the scan and rebuild index at exit
 thing...
 
-Then i had seen the msf thing in thunderbird - oh boy, what a mess ...
+Then I had seen the msf thing in thunderbird - oh boy, what a mess ...
 
-Then i tried the others ... only to see that its still one of the three big
-that i want to use - but now i could do it for all of them ...
+Then I tried the others ... only to see that its still one of the three big
+that I want to use - but now I could do it for all of them ...
 
-Then i integrated more checks and more errors.. so i got again debugging
-sessions to do, but i found next problems now faster ...
+Then I integrated more checks and more errors.. so I got again debugging
+sessions to do, but I found next problems now faster ...
 
-And yes, i did even learn a thing about using the oo way with perl...
+And yes, I did even learn a thing about using the oo way with perl...
 
-So i finally made a hunt for the possible systems ...
+So I finally made a hunt for the possible systems ...
 
 And came up with only a hand full more.
 
-At last i decided to make an export and import thing for my own.
+At last I decided to make an export and import thing for my own.
 
-So i introduced the vanilla - again errors and again more debugging ..
+So I introduced the vanilla - again errors and again more debugging ..
 
 Found the problems for a structure where no structure was and - bingo.
 
-Now i peeked at the last ones -- but many only made a cold shoulder...
+Now I peeked at the last ones -- but many only made a cold shoulder...
 
 I tried the command line tools - mutt, pine .. ok, alpine now ..
 
 And found them to do the mbox thing just like thunderbird....
 
-Then i tried one last time to get the beasts up that were not
+Then I tried one last time to get the beasts up that were not
 running on the box ... but no luck.
 
-So i ended with the list i have now (25.02.2018 german time) in.
+So I ended with the list I have now (25.02.2018 german time) in.
 
-Hope i will make it now with my plan to make a automatic import.
+Hope I will make it now with my plan to make a automatic import.
 
 And have decided to give this to YOU so you can solve your problem with it.
 
-Ah . the Filter ...
+Ah. The Filter ...
 
 I almost forgot it.
 
 I have a setup with a mail account that collects all mails for a big
 freemailer.
-Then i use a account on my server to get my mails from it. Its done by
+
+Then I use an account on my server to get my mails from it. Its done by
 
 fetchmail
 
@@ -2499,27 +2863,29 @@ The fetchmail is used from a user that has only to deal with mails fetching,
 filter out the lists and some spam , and deliver the rest to the main user on
 my box.
 
-So i had the
+So I had the
+
 procmail
+
 in and it worked for nearly the same time.
 
 Till an upgrade made the thing no longer working.
 
-So i started after the transfer the filter thing.
+So I started after the transfer the filter thing.
 
 It was also a rework of my transfer, and made many simple bugs visible.
 
-So i checked to make any thing work not only for my thing, but also
+So I checked to make any thing work not only for my thing, but also
 for the user that has no procmail in or so and simply needs a filter.
 
-Then i found some uses for the rule system  - it is now using a pool
+Then I found some uses for the rule system  - it is now using a pool
 for rules that filter out some unwanted mails.
 
-The rest is still now in motion. i try to make the best for filtering,
+The rest is still now in motion. I try to make the best for filtering,
 but it seems that a simple match filter is too simple to do the job
 today.
 
-so i try to make it better every day - at lest a bit 
+So I try to make it better every day - at least a bit... 
 
 Happy mail filtering.
 
@@ -2534,24 +2900,24 @@ atr AT atrsoft DOT de
 
 replace AT with the mails at sign and dot with the . and delete the spaces.
 
-This is against the automates that hunt fro email adresses ..
+This is against the automates that hunt for email adresses ..
 
 Next.
 
-If you have trouble - i read mails not on a per day, more a per
+If you have trouble - I read mails not on a per day, more a per
 week base .. you get answer, but it can take a week.
 
 Next.
 
 If you have no clue - sent me the scanfile, the planfile, the logfile.
 
-NO Mailtree - i dont plan to access somebody mails - and it would be
+NO Mailtree - I dont plan to access somebody mails - and it would be
 impossible for real big ones... have 3 G for myself ...
 
-So the three files and the output of them - a rerote into a file.
+So the three files and the output of them - a reroute into a file.
 
-please - dont estimate i cna read minds .. if you did something after
-a scan and changed something here and there ... i will not get it.
+Please - dont estimate I can read minds .. if you did something after
+a scan and changed something here and there ... I will not get it.
 
 Next.
 
@@ -2561,12 +2927,12 @@ And compress it - or my mailbox will not handle it ...
 
 Thanks for helping me to help you ...
 
-The source is on github, so i hope somebody will still step in and
-maintain it when i am gone - then the email above  of course will
+The source is on github, so I hope somebody will still step in and
+maintaine it when I am gone - then the email above  of course will
 change to that guy ..
 
 
-If you have problems with rules - zip them and i try to see what i can do.
+If you have problems with rules - zip them and I try to see what I can do.
 
 At last :
 

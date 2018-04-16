@@ -138,6 +138,20 @@ sub initialize {
 		next;
 	    }
 
+	    if ($line =~ m:^[\s]*RULE[\s]+EXTENDS[\s]+([\d]+)[\s]*$:i) {
+		my $id = $lastid + 1;
+
+		my $father = 0 + $1;
+		
+		$self->copyif($father, $all_rules_r);
+
+		$self->{id} = $id;
+
+		$lastid = $id;
+
+		next;
+	    }
+
 	    if ($line =~ m:^[\s]*RULE[\s]+([\d]+)[\s]*$:i) {
 		my $id = 0 + $1;
 
@@ -245,7 +259,7 @@ sub initialize {
 		};
 
 		if ($@) {
-		    print "ERROR750: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    &::dolog("ERROR701: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error");
 		    exit (1);
 		}
 		next;
@@ -261,7 +275,7 @@ sub initialize {
 		};
 
 		if ($@) {
-		    print "ERROR751: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    &::dolog("ERROR702: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error");
 		    exit (1);
 		}
 
@@ -278,7 +292,7 @@ sub initialize {
 		};
 
 		if ($@) {
-		    print "ERROR752: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    &::dolog("ERROR703: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error");
 		    exit (1);
 		}
 
@@ -296,7 +310,7 @@ sub initialize {
 		};
 
 		if ($@) {
-		    print "ERROR753: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error\n";
+		    &::dolog("ERROR704: in rule $id in rulefile $fname line $lnr \n$@\nthis is an error");
 		    exit (1);
 		}
 
@@ -323,7 +337,7 @@ sub initialize {
 		
 		};
 		if ($@) {
-		    print "ERROR724: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    &::dolog("ERROR705: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.");
 		    exit(1);
 		}
 		
@@ -344,7 +358,7 @@ sub initialize {
 		
 		};
 		if ($@) {
-		    print "ERROR725: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    &::dolog("ERROR706: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.");
 		    exit(1);
 		}
 		
@@ -365,7 +379,7 @@ sub initialize {
 		    push @{$self->{notbody}}, $qre;
 		};
 		if ($@) {
-		    print "ERROR726: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    &::dolog("ERROR707: cannot compile in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.");
 		    exit(1);
 		}
 		
@@ -384,7 +398,7 @@ sub initialize {
 		    &MailTransferMail::add_white($re);
 		};
 		if ($@) {
-		    print "ERROR727: cannot whitelist in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    &::dolog("ERROR708: cannot whitelist in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.");
 		    exit(1);
 		} 
 		else
@@ -407,7 +421,7 @@ sub initialize {
 		    &MailTransferMail::add_black($re);
 		};
 		if ($@) {
-		    print "ERROR728: cannot blacklist in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.";
+		    &::dolog("ERROR709: cannot blacklist in rule " . $self->{id} . " in file $fname line $lnr \n$re ..\nthis is an error.");
 		    exit(1);
 		}
 		else
@@ -465,11 +479,11 @@ sub initialize {
 		next;
 	    }
 
-	    print "ERROR701: strange line in rule $self->{id} rulefile $fname line $lnr \n$line\nthis is an error.\n";
+	    &::dolog("ERROR710: strange line in rule $self->{id} rulefile $fname line $lnr \n$line\nthis is an error.");
 	    exit (1);
 	}
     } else {
-	print "ERROR702: wrong number of parameters rulefile $fname line $lnr \n.\nthis is an error.\n";
+	&::dolog("ERROR711: wrong number of parameters rulefile $fname line $lnr \n.\nthis is an error.");
 	exit (1);
     }
     
@@ -506,7 +520,7 @@ sub copyif {
     }
 
 
-    die "ERROR730:father $fatherid not found in extends rule ... \n"; 
+    die "ERROR712:father $fatherid not found in extends rule ... \n"; 
 }
 
 sub copy {
@@ -640,7 +654,7 @@ sub getmatch {
 	    my $rtest = qr/$rt/;
 	    push @{$r} , $rt;
 	} else {
-	    die "ERROR740: text not ok in match $line ";
+	    die "ERROR713: text not ok in match $line ";
 	}
 	    
 	++ $akline;
@@ -713,13 +727,13 @@ sub apply {
     
     if ($rule->{'never'}) {
 	# no more test needed
-	print $logfh "RULE $id never for $mailnumber ...\n" if $verbose;
+	&::dolog("RULE $id never for $mailnumber ...") if $verbose;
 	return (0,0); # never have an error, never have a stop
     }
 
     if ($rule->{'store'} == 0) {
 	# no more test needed
-	print $logfh "RULE $id not store for $mailnumber ...\n" if $verbose;
+	&::dolog("RULE $id not store for $mailnumber ...") if $verbose;
 	return (0,0); # never have an error, never have a stop
     }
 
@@ -732,7 +746,7 @@ sub apply {
 
 	$lasterg = 0;
 
-	print $logfh "RULE $id always for $mailnumber ...\n";
+	&::dolog("RULE $id always for $mailnumber ...");
     } elsif ($rule->{routecount} < 9999) {
 	# we have the magic routecount check in
 	$reason = 'routecount';
@@ -763,7 +777,7 @@ sub apply {
 		}
 	    }
 	    
-	    if ($hostlines < $rule->{routecount}) {
+	    if ($hostlines <= $rule->{routecount}) {
 		$lasterg = 0;
 		# go on and do what you have to do ...
 	    } else {
@@ -1029,7 +1043,7 @@ sub apply {
 
     foreach my $sent (@{$rule->{sent}}) {
 	# we append the thing to the mailbox of the user on this box..
-	print $logfh "RULE $id send to $sent  for $mailnumber ...\n";
+	&::dolog("RULE $id send to $sent  for $mailnumber ...");
 
 	if ($rule->{why}) {
 	    &why_info($mail_r, $logfh);
@@ -1063,7 +1077,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR704: cannot send to $sent because $@ \n"; 
+	    &::dolog("ERROR714: cannot send to $sent because $@ "); 
 	}
     }
 
@@ -1101,7 +1115,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR705: cannot sendmail to $sent because $@ \n"; 
+	    &::dolog("ERROR715: cannot sendmail to $sent because $@ "); 
 	}
     }
 
@@ -1139,7 +1153,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR706: cannot proc to $proc because $@ \n"; 
+	    &::dolog("ERROR716: cannot proc to $proc because $@ "); 
 	}
     }
 
@@ -1161,7 +1175,7 @@ sub apply {
 	};
 
 	if ($@) {
-	    print $logfh "ERROR707: cannot code because $@ \n"; 
+	    &::dolog("ERROR717: cannot code because $@ "); 
 	}
 
 	++$cnr;
@@ -1271,20 +1285,20 @@ sub apply {
 
 	if ($retwrite != 0) {
 	    # ups ... what to do ? spell it out ..
-	    print "ERROR708: error in writefile for $copy  for $mailnumber ... \n"; 
+	    &::dolog("ERROR718: error in writefile for $copy  for $mailnumber ... "); 
 	}
     }
 
     if ($rule->{newrule}) {
 	# we append the thing to the mailbox of the user on this box..
-	print $logfh "RULE $id newrule for $mailnumber ...\n";
+	&::dolog("RULE $id newrule for $mailnumber ...");
 
 	eval {
 	    &newrule ($mail_r, $pools_r);
 	};
 
 	if ($@) {
-	    print $logfh "ERROR709: cannot newrule because : $@ \n"; 
+	    &::dolog("ERROR719: cannot newrule because : $@ "); 
 	}
     }
 
@@ -1342,12 +1356,12 @@ sub procto {
     my $fh ;
 
     if (! -x $proc ) {
-	die "cannot execute the $proc ..\n";
+	die "ERROR734: cannot execute the $proc ..\n";
     }
     
-    open ($fh, "|" . $proc) or die "cannot open $proc for pipe\n";
+    open ($fh, "|" . $proc) or die "ERROR735: cannot open $proc for pipe\n";
 
-    print $fh $msg;
+    my $pret = print $fh $msg;
 
     # i do a separate io here to give the proc the chance to do its thing ...
     print $fh "\n";
@@ -1370,7 +1384,7 @@ sub codeto {
     };
 
     if ($@) {
-	die "cannot execute code : $@ \n";
+	die "ERROR720: cannot execute code : $@ \n";
     }
 }
 
@@ -1385,9 +1399,9 @@ sub sentmailto {
     
     my $fh ;
 
-    open ($fh, "|" . $sendmailproc . " " . $mailadr ) or die "cannot open $sendmailproc for pipe\n";
+    open ($fh, "|" . $sendmailproc . " " . $mailadr ) or die "ERROR736: cannot open $sendmailproc for pipe\n";
 
-    print $fh $msg;
+    my $pret = print $fh $msg;
 
     # i do a separate io here to give the proc the chance to do its thing ...
     print $fh "\n";
@@ -1412,14 +1426,14 @@ sub mailto {
 	my $target = $mailboxdir . '/' . $user;
 
 	if (! -f $target) {
-	    die "mailbox not existing for $user at $mailboxdir ...\n";
+	    die "ERROR737: mailbox not existing for $user at $mailboxdir ...\n";
 	}
 	
 	if (! -w $target) {
-	    die "mailbox not writeable for $user at $mailboxdir ...\n";
+	    die "ERROR738: mailbox not writeable for $user at $mailboxdir ...\n";
 	}
 	
-	open(my $mbox, ">>" . $target ) or die "cannot open target for write.. \n";
+	open(my $mbox, ">>" . $target ) or die "ERROR739: cannot open target for write.. \n";
 	lock($mbox);
 	print $mbox $msg,"\n\n";
 	unlock($mbox);
@@ -1430,16 +1444,16 @@ sub mailto {
 sub lock {
     # helper
     my ($fh) = @_;
-    flock($fh, LOCK_EX) or die "Cannot lock mailbox - $!\n";
+    flock($fh, LOCK_EX) or die "ERROR739: Cannot lock mailbox - $!\n";
 
     # and, in case someone appended while we were waiting...
-    seek($fh, 0, SEEK_END) or die "Cannot seek - $!\n";
+    seek($fh, 0, SEEK_END) or die "ERROR740: Cannot seek - $!\n";
 }
 
 sub unlock {
     # helper
     my ($fh) = @_;
-    flock($fh, LOCK_UN) or die "Cannot unlock mailbox - $!\n";
+    flock($fh, LOCK_UN) or die "ERROR741: Cannot unlock mailbox - $!\n";
 }
 
 
@@ -1500,7 +1514,7 @@ sub newrule {
     }
 
     if ($inpool == 1) {
-	die "pool not in allowed list of pools.\n";
+	die "ERROR743: pool not in allowed list of pools.\n";
     }
     
     if ($rulepool ne ''
@@ -1519,10 +1533,10 @@ sub newrule {
 
 		close $fh;
 		if ($ret != 1) {
-		    die "cannot write rulefile $rfile .. \n";
+		    die "ERROR744: cannot write rulefile $rfile .. \n";
 		}
 	    } else {
-		die "cannot open rulefile for write $rfile .. \n";
+		die "ERROR745: cannot open rulefile for write $rfile .. \n";
 	    }
 	}
     }
@@ -1637,7 +1651,7 @@ sub load_rules_file {
 
 		    close $fh;
 		} else {
-		    print "ERROR710: include not readable in $fname line $rflnr\n$_\n" . $pm . "\nthis is an error.\n";
+		    &::dolog("ERROR721: include not readable in $fname line $rflnr\n$_\n" . $pm . "\nthis is an error.");
 		    exit(1);
 		}
 	    } elsif (-f $::basedirs[0] . '/' . $pm) {
@@ -1649,7 +1663,7 @@ sub load_rules_file {
 
 		    close $fh;
 		} else {
-		    print "ERROR711: include not readable in $fname line $rflnr\n$_\n" . $::basedirs[0] . '/' . $pm . "\nthis is an error.\n";
+		    &::dolog("ERROR722: include not readable in $fname line $rflnr\n$_\n" . $::basedirs[0] . '/' . $pm . "\nthis is an error.");
 		    exit(1);
 		}
 	    } elsif (-f $::basedirs[1] . '/' . $pm) {
@@ -1661,7 +1675,7 @@ sub load_rules_file {
 
 		    close $fh;
 		} else {
-		    print "ERROR712: include not readable in $fname line $rflnr\n$_\n" . $::basedirs[1] . '/' . $pm . "\nthis is an error.\n";
+		    &::dolog("ERROR723: include not readable in $fname line $rflnr\n$_\n" . $::basedirs[1] . '/' . $pm . "\nthis is an error.");
 		    exit(1);
 		}
 	    } elsif (-d $pm) {
@@ -1687,16 +1701,16 @@ sub load_rules_file {
 				&load_rules_file($fh, 0, $r_r, $level + 1, $f);
 				close $fh;
 			    } else {
-				print "ERROR713: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+				&::dolog("ERROR724: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.");
 				exit(1);
 			    }
 			} else {
-			    print "ERROR714: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+			    &::dolog("ERROR725: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.");
 			    exit(1);
 			}
 		    }
 		} else {
-		    print "ERROR715: include directory not readable in $fname line $rflnr\n$_\n$pm\nthis is an error.\n";
+		    &::dolog("ERROR726: include directory not readable in $fname line $rflnr\n$_\n$pm\nthis is an error.");
 		    exit(1);
 		}
 	    } elsif (-d $::basedirs[0] . '/' . $pm) {
@@ -1722,16 +1736,16 @@ sub load_rules_file {
 				&load_rules_file($fh, 0, $r_r, $level + 1, $f);
 				close $fh;
 			    } else {
-				print "ERROR716: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+				&::dolog("ERROR727: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.");
 				exit(1);
 			    }
 			} else {
-			    print "ERROR717: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+			    &::dolog("ERROR728: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.");
 			    exit(1);
 			}
 		    }
 		} else {
-		    print "ERROR718: include directory not readable in $fname line $rflnr\n$_\n" . $::basedirs[0] . '/' . $pm . "\nthis is an error.\n";
+		    &::dolog("ERROR729: include directory not readable in $fname line $rflnr\n$_\n" . $::basedirs[0] . '/' . $pm . "\nthis is an error.");
 		    exit(1);
 		}
 	    } elsif (-d $::basedirs[1] . '/' . $pm) {
@@ -1757,22 +1771,22 @@ sub load_rules_file {
 				&load_rules_file($fh, 0, $r_r, $level + 1, $f);
 				close $fh;
 			    } else {
-				print "ERROR719: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+				&::dolog("ERROR730: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.");
 				exit(1);
 			    }
 			} else {
-			    print "ERROR720: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.\n";
+			    &::dolog("ERROR731: include not readable in $fname line $rflnr\n$_\n$f\nthis is an error.");
 			    exit(1);
 			}
 		    }
 		} else {
-		    print "ERROR721: include directory not readable in $fname line $rflnr\n$_\n" . $::basedirs[1] . '/' . $pm . "\nthis is an error.\n";
+		    &::dolog("ERROR732: include directory not readable in $fname line $rflnr\n$_\n" . $::basedirs[1] . '/' . $pm . "\nthis is an error.");
 		    exit(1);
 		}
 	    } else {
 		# ups. we have an include that does not work here
 
-		print "ERROR722: include is not possible for $fname line $rflnr\n$_\nthis is an error.\n";
+		&::dolog("ERROR733: include is not possible for $fname line $rflnr\n$_\nthis is an error.");
 		exit(1);
 	    }
 	    
@@ -1802,7 +1816,7 @@ sub load_rules_file {
 
 	# ups. something but not known in this rulefile ...
 
-	print "ERROR723: unknown found in rulefile $fname line $rflnr\n$_\nthis is an error.\n";
+	&::dolog("ERROR734: unknown found in rulefile $fname line $rflnr\n$_\nthis is an error.");
 	exit(1);
     }
 

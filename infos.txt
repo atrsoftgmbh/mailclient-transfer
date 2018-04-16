@@ -1,0 +1,157 @@
+slypheed
+
+1. ordnerbaum neu bilden nicht vergessen ...
+2. namen von files immer 1 2 3  ...
+3. neue files adden wird direkt erkannt ..
+
+evolution
+
+erst rein inneuen ordner, dann raus, dabei rescan, dann wieder  rein und sie sind da .... index and meta
+
+
+seamonkey.
+
+import analog zu thunderbird.
+aber : wird ncht erkannt...
+erster trick:
+
+folder anlegen.
+
+dann in eigenschaften speicherort umbiegen auf import prefix ordner .. neuer scan von seamonkey erledigt dann rest .. sieht dann wie thunderbird wieder alles ...
+
+thunderbird und seamonkey :
+
+integration klappt nicht mit slinks, daher ist mail als slink nötig und dann kopiern physisch der fiels und ordner ...
+
+alles so windowish heir ...
+
+mulberry : tot
+
+
+mailspring : kann nicht ohne server zu hause ... mag ich nicht.
+
+zdesktop :
+
+[root@hydra tmp]# tar zxf zdesktop_7_3_1_ga_b13063_20170628044421_linux_x64.tgz 
+[root@hydra tmp]# ls
+zdesktop_7_3_1_ga_b13063_20170628044421_linux_x64.tgz  zdesktop_7_3_1_ga_b13063_linux_x64
+[root@hydra tmp]# ls -l
+insgesamt 124952
+-rw-r--r--. 1 root root 127947532 24. Feb 00:04 zdesktop_7_3_1_ga_b13063_20170628044421_linux_x64.tgz
+drwxrwxr-x. 4 1000 1000        48 28. Jun 2017  zdesktop_7_3_1_ga_b13063_linux_x64
+[root@hydra tmp]# cd zdesktop_7_3_1_ga_b13063_linux_x64/
+[root@hydra zdesktop_7_3_1_ga_b13063_linux_x64]# ls
+app  install.pl  jetty
+[root@hydra zdesktop_7_3_1_ga_b13063_linux_x64]# perl install.pl 
+
+
+Welcome to Zimbra Desktop setup wizard. This will install Zimbra Desktop on your computer.
+------------------------------
+Press enter to continue: 
+
+
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE USING THE SOFTWARE.  SYNACOR INC. WILL ONLY LICENSE THIS SOFTWARE TO YOU IF YOU FIRST ACCEPT THE TERMS OF THIS AGREEMENT. BY DOWNLOADING OR INSTALLING THE SOFTWARE, OR USING THE PRODUCT, YOU ARE CONSENTING TO BE BOUND BY THIS AGREEMENT. IF YOU DO NOT AGREE TO ALL OF THE TERMS OF THIS AGREEMENT, THEN DO NOT DOWNLOAD, INSTALL OR USE THE PRODUCT.
+License Terms for this Zimbra Desktop Software: http://www.zimbra.com/license/zimbra_public_eula.html
+
+------------------------------
+(A)ccept or (D)ecline [A]: 
+
+
+------------------------------
+Choose the folder where you would like to install Zimbra Desktop's application files [/opt/zimbra/zdesktop]: 
+
+
+Installing application files...done
+
+You have finished installing application files.
+
+Would you like to continue to install data files for user: root ?
+------------------------------
+(Y)es or (N)o [N]: n
+
+
+To install data files for additional users, please login as the user and run this command:
+/opt/zimbra/zdesktop/linux/user-install.pl
+
+[root@hydra zdesktop_7_3_1_ga_b13063_linux_x64]# 
+
+
+wow.
+
+dann:
+
+[ar@hydra ~]$ /opt/zimbra/zdesktop/linux/user-install.pl 
+------------------------------
+Choose the folder where you would like to install Zimbra Desktop's user data files, full path please [/home/ar/zdesktop]: 
+
+
+------------------------------
+Choose the folder where you would like to create desktop icon [/home/ar/Desktop]: 
+
+
+
+Installing user data files...done
+Initializing user data...Error: cannot open file /opt/zimbra/zdesktop/linux/zdrun.pl.tmp
+
+
+als root also chmod dafür gemacht.. dann ...
+
+[ar@hydra ~]$ /opt/zimbra/zdesktop/linux/user-install.pl 
+------------------------------
+Choose the folder where you would like to install Zimbra Desktop's user data files, full path please [/home/ar/zdesktop]: 
+
+
+------------------------------
+Choose the folder where you would like to create desktop icon [/home/ar/Desktop]: 
+
+
+
+Installing user data files...done
+Initializing user data...done
+Creating desktop icon...done
+mv: der Aufruf von stat für '/home/ar/zdesktop.tmp/index/*' ist nicht möglich: No such file or directory
+mv: der Aufruf von stat für '/home/ar/zdesktop.tmp/store/*' ist nicht möglich: No such file or directory
+mv: der Aufruf von stat für '/home/ar/zdesktop.tmp/sqlite/*' ist nicht möglich: No such file or directory
+mv: der Aufruf von stat für '/home/ar/zdesktop.tmp/log/*' ist nicht möglich: No such file or directory
+mv: der Aufruf von stat für '/home/ar/zdesktop.tmp/zimlets-deployed/*' ist nicht möglich: No such file or directory
+Zimbra Desktop has been installed successfully for user ar.
+
+You can start Zimbra Desktop by double-clicking the desktop icon or by running the following command:
+"/opt/zimbra/zdesktop/linux/zdrun.pl"
+
+Press "Enter" to launch Zimbra Desktop; Press "Ctrl-c" to exit: 
+
+na ja... mal sehen was nun apssiert ...
+
+drücke mal enter ...
+
+ar@hydra ~]$ JRE version 8 is found on your system.
+JETTY_HOME     =  /opt/zimbra/zdesktop/jetty
+JETTY_RUN      =  /home/ar/zdesktop/log
+JETTY_PID      =  /home/ar/zdesktop/log/zdesktop.pid
+JETTY_CONSOLE  =  /home/ar/zdesktop/log/zdesktop.out
+JETTY_ARGS     =  
+CONFIGS        =  /home/ar/zdesktop/jetty/etc/jetty.xml
+JAVA_OPTIONS   =  -client -Djava.awt.headless=true -Xms128m -Xmx1024m -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:NewRatio=4 -XX:TargetSurvivorRatio=70 -XX:+UseConcMarkSweepGC -DSTART='/opt/zimbra/zdesktop/jetty/etc/start.config' -Dzimbra.home='/home/ar/zdesktop' -Dzimbra.config='/home/ar/zdesktop/conf/localconfig.xml' -Djava.library.path='/opt/zimbra/zdesktop/jetty/../lib' -Djava.awt.headless=true -Djava.io.tmpdir='/home/ar/zdesktop/data/tmp/java' -Djava.net.useSystemProxies=true -Dsun.net.inetaddr.ttl=10 -XX:HeapDumpPath='/home/ar/zdesktop/heapdump/' -XX:+HeapDumpOnOutOfMemoryError -Djetty.home='/opt/zimbra/zdesktop/jetty'
+JAVA           =  /usr/bin/java
+Starting Jetty: 
+Jetty running pid=11778
+nohup: leite Standardfehlerausgabe auf Standardausgabe um
+cp: das Entfernen von '/opt/zimbra/zdesktop/linux/node-webkit/package.json' ist nicht möglich: Permission denied
+
+[ar@hydra ~]$ 
+
+hm. nicht gut. ich ignoriere also auch den ...
+
+mutt:
+
+nutzt mbox , also nicht mein ding ... ich denke mal drüber nach ..
+
+pine, alpine : mbox ...
+
+also keine folder in folder ...
+
+alles unter $HOME/Mail oder unter $HOME/mail ..
+
+hm. mal sehen ob ich mbox als folder mache und dann als quelle sogar lese ..
+

@@ -49,7 +49,7 @@ sub initialize {
 	    push @{$self->{matcher}}, $r;
 	};
 	if ($@) {
-	    print "cannot make regex of $reg ..\n"; 
+	    die "ERROR801: cannot make regex of $reg ..\n"; 
 	}
     }
 
@@ -60,7 +60,7 @@ sub initialize {
 	    push @{$self->{nonmatcher}}, $r;
 	};
 	if ($@) {
-	    print "cannot make regex of $reg ..\n"; 
+	    die "ERROR802: cannot make regex of $reg ..\n"; 
 	}
     }
     
@@ -129,6 +129,10 @@ sub apply {
 	    $cret = &$co($c, $mail_r, $self, $cnr, $lnr);
 	};
 
+	if ($@) {
+	    die "ERROR803: cannot execute code $code : $@";
+	}
+	
 	if ($cret == 1) {
 	    return 1; # bad thing. code didnt accept it
 	}
@@ -151,7 +155,7 @@ sub apply {
 	    my $ofh;
 
 	    if (!open($ofh, ">" . $mfile)) {
-		print "WARNING: cannot write mail for command ... $mfile ..ignore it\n";
+		die "ERROR804:  cannot write mail for command ... $mfile ..\nxs";
 	    } else {
 		my $mail = '';
 
@@ -159,16 +163,20 @@ sub apply {
 		    $mail .= $mail_r->{text}->[$i] ;
 		}
 
-		print $ofh $mail;
+		my $pret = print $ofh $mail;
 		
 		close $ofh;
-	
-		my $sret = system $m . " " . $mfile . " " ;
 
-		unlink ($mfile);
+		if ($pret == 1) {
+		    my $sret = system $m . " " . $mfile . " " ;
 
-		if ($sret != 0) {
-		    return 1;
+		    unlink ($mfile);
+
+		    if ($sret != 0) {
+			return 1;
+		    }
+		} else {
+		    die "ERROR805: cannot write mail for command $m : $@ \n";
 		}
 	    }
 	}
