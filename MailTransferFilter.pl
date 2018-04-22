@@ -568,11 +568,11 @@ sub splitit_and_filter {
 	my $mail_r = [];
 
 	if ($exact == 1) {
-	    my $m = &MailTransferDirData::getamail(\@lines, 0, $logfh);
+	    my $m = &MailTransferDirData::getamail(\@lines, 0, $log);
 	    $m->{bend} = $#lines; # readjust length to full ...
 	    $mail_r = [ $m  ]; 
 	} else {
-	    $mail_r = &MailTransferDirData::get_all_mails (\@lines,  $logfh);
+	    $mail_r = &MailTransferDirData::get_all_mails (\@lines,  $log);
 	}
 	
 	&dolog("File scanned for mails, found " . ($#$mail_r + 1 ) . " mails ..");
